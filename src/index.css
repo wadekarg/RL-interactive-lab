@@ -1,0 +1,128 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+}
+
+/* ══════════════════════════════════════════
+   THEME DEFINITIONS — CSS Custom Properties
+   ══════════════════════════════════════════ */
+
+/* ── Dark Theme (default) ── */
+:root,
+[data-theme="dark"] {
+  --color-primary: 99 102 241;        /* #6366f1 */
+  --color-primary-light: 129 140 248;  /* #818cf8 */
+  --color-primary-dark: 79 70 229;     /* #4f46e5 */
+
+  --color-surface: 30 30 46;           /* #1e1e2e */
+  --color-surface-light: 42 42 62;     /* #2a2a3e */
+  --color-surface-lighter: 54 54 80;   /* #363650 */
+
+  --color-text: 226 232 240;           /* #e2e8f0 */
+  --color-text-muted: 148 163 184;     /* #94a3b8 */
+
+  --color-accent-green: 34 197 94;     /* #22c55e */
+  --color-accent-red: 239 68 68;       /* #ef4444 */
+  --color-accent-yellow: 234 179 8;    /* #eab308 */
+  --color-accent-blue: 59 130 246;     /* #3b82f6 */
+
+  /* Chart-specific */
+  --color-chart-grid: 54 54 80;
+  --color-chart-axis: 148 163 184;
+  --color-tooltip-bg: 42 42 62;
+  --color-tooltip-border: 54 54 80;
+
+  /* Scrollbar */
+  --color-scrollbar-track: 30 30 46;
+  --color-scrollbar-thumb: 54 54 80;
+}
+
+/* ── Light Theme ── */
+[data-theme="light"] {
+  --color-primary: 79 70 229;         /* #4f46e5 */
+  --color-primary-light: 99 102 241;   /* #6366f1 */
+  --color-primary-dark: 67 56 202;     /* #4338ca */
+
+  --color-surface: 248 250 252;        /* #f8fafc */
+  --color-surface-light: 241 245 249;  /* #f1f5f9 */
+  --color-surface-lighter: 226 232 240; /* #e2e8f0 */
+
+  --color-text: 30 41 59;             /* #1e293b */
+  --color-text-muted: 100 116 139;     /* #64748b */
+
+  --color-accent-green: 22 163 74;     /* #16a34a */
+  --color-accent-red: 220 38 38;       /* #dc2626 */
+  --color-accent-yellow: 202 138 4;    /* #ca8a04 */
+  --color-accent-blue: 37 99 235;      /* #2563eb */
+
+  --color-chart-grid: 226 232 240;
+  --color-chart-axis: 100 116 139;
+  --color-tooltip-bg: 255 255 255;
+  --color-tooltip-border: 226 232 240;
+
+  --color-scrollbar-track: 241 245 249;
+  --color-scrollbar-thumb: 203 213 225;
+}
+
+/* ── Warm Theme (earthy/amber) ── */
+[data-theme="warm"] {
+  --color-primary: 180 83 9;          /* #b45309 */
+  --color-primary-light: 217 119 6;    /* #d97706 */
+  --color-primary-dark: 146 64 14;     /* #92400e */
+
+  --color-surface: 250 246 240;        /* #faf6f0 */
+  --color-surface-light: 245 237 227;  /* #f5ede3 */
+  --color-surface-lighter: 232 223 210; /* #e8dfd2 */
+
+  --color-text: 61 46 31;             /* #3d2e1f */
+  --color-text-muted: 139 115 85;      /* #8b7355 */
+
+  --color-accent-green: 22 163 74;     /* #16a34a */
+  --color-accent-red: 185 28 28;       /* #b91c1c */
+  --color-accent-yellow: 161 98 7;     /* #a16207 */
+  --color-accent-blue: 29 78 216;      /* #1d4ed8 */
+
+  --color-chart-grid: 232 223 210;
+  --color-chart-axis: 139 115 85;
+  --color-tooltip-bg: 250 246 240;
+  --color-tooltip-border: 232 223 210;
+
+  --color-scrollbar-track: 245 237 227;
+  --color-scrollbar-thumb: 210 196 176;
+}
+
+/* ══════════════════════════════════════════
+   BASE STYLES
+   ══════════════════════════════════════════ */
+
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: rgb(var(--color-surface));
+  color: rgb(var(--color-text));
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgb(var(--color-scrollbar-track));
+}
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--color-scrollbar-thumb));
+  border-radius: 3px;
+}
+
+.katex {
+  color: rgb(var(--color-text)) !important;
+}
+
+/* Smooth theme transitions for panels */
+.bg-surface, .bg-surface-light, .bg-surface-lighter {
+  transition: background-color 0.3s ease;
+}

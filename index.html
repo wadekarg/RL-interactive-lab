@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RL Interactive Lab</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script>
+      // Prevent flash of wrong theme
+      try {
+        var t = localStorage.getItem('rl-lab-theme');
+        if (t === 'light' || t === 'warm' || t === 'dark')
+          document.documentElement.setAttribute('data-theme', t);
+        else
+          document.documentElement.setAttribute('data-theme', 'dark');
+      } catch(e) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    </script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
