@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback } from 'react'
+import { Link } from 'react-router-dom'
 import { BanditEnvironment } from '../../environments/bandit'
 import { EpsilonGreedyAgent } from '../../algorithms/bandit/epsilonGreedy'
 import { UCBAgent } from '../../algorithms/bandit/ucb'
@@ -122,12 +123,20 @@ export function BanditPage() {
               The fundamental exploration vs exploitation dilemma
             </p>
           </div>
-          <button
-            onClick={() => setShowIntro(!showIntro)}
-            className="text-xs text-text-muted hover:text-text bg-surface-light px-3 py-1.5 rounded-lg border border-surface-lighter cursor-pointer"
-          >
-            {showIntro ? 'Hide intro' : 'Show intro'}
-          </button>
+          <div className="flex items-center gap-2">
+            <Link
+              to="/bandit-guide"
+              className="text-xs font-medium text-primary-light hover:text-primary bg-primary/10 px-3 py-1.5 rounded-lg border border-primary/20 no-underline hover:bg-primary/20 transition-colors"
+            >
+              Learn the Theory
+            </Link>
+            <button
+              onClick={() => setShowIntro(!showIntro)}
+              className="text-xs text-text-muted hover:text-text bg-surface-light px-3 py-1.5 rounded-lg border border-surface-lighter cursor-pointer"
+            >
+              {showIntro ? 'Hide intro' : 'Show intro'}
+            </button>
+          </div>
         </div>
 
         {showIntro && (

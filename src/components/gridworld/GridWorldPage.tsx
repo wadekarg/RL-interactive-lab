@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { GridWorldEnvironment, CellType } from '../../environments/gridworld'
 import type { GridState, GridAction, GridWorldConfig } from '../../environments/gridworld'
 import { QLearningAgent } from '../../algorithms/gridworld/qLearning'
@@ -283,12 +284,20 @@ export function GridWorldPage() {
               Help Boru learn the safest path using Reinforcement Learning
             </p>
           </div>
-          <button
-            onClick={() => setShowIntro(!showIntro)}
-            className="text-xs text-text-muted hover:text-text bg-surface-light px-3 py-1.5 rounded-lg border border-surface-lighter cursor-pointer"
-          >
-            {showIntro ? 'Hide story' : 'Show story'}
-          </button>
+          <div className="flex items-center gap-2">
+            <Link
+              to="/gridworld-guide"
+              className="text-xs font-medium text-primary-light hover:text-primary bg-primary/10 px-3 py-1.5 rounded-lg border border-primary/20 no-underline hover:bg-primary/20 transition-colors"
+            >
+              Learn the Theory
+            </Link>
+            <button
+              onClick={() => setShowIntro(!showIntro)}
+              className="text-xs text-text-muted hover:text-text bg-surface-light px-3 py-1.5 rounded-lg border border-surface-lighter cursor-pointer"
+            >
+              {showIntro ? 'Hide story' : 'Show story'}
+            </button>
+          </div>
         </div>
 
         {showIntro && (
