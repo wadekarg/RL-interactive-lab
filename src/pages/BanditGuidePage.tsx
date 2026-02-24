@@ -235,28 +235,6 @@ export function BanditGuidePage() {
             ))}
           </div>
 
-          {/* Real-World Success Stories */}
-          <h3 className="text-sm font-bold text-primary-light uppercase tracking-wider mt-6 mb-3">Real-World Success Stories</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {[
-              { org: 'Netflix', year: '2016-18', problem: 'Personalizing movie artwork for each user to maximize engagement.', algo: 'Thompson Sampling (Contextual Bandits)', result: 'Significant lift in engagement across 100M+ subscribers' },
-              { org: 'Yahoo!', year: '2010', problem: 'Recommending news articles to users on the Yahoo! front page.', algo: 'LinUCB (Linear Upper Confidence Bound)', result: '12.5% CTR lift over random, evaluated on 33M+ events' },
-              { org: 'Google', year: '2013', problem: 'Running website content experiments (Google Analytics).', algo: 'Bayesian Bandits (Multi-Armed)', result: '~175 days saved per test vs. traditional A/B testing' },
-              { org: 'I-SPY 2 Trial', year: '2010-present', problem: 'Adaptive breast cancer clinical trials assigning patients to treatments.', algo: 'Bayesian Adaptive Randomization', result: '7 of 12 experimental drugs graduated to phase 3 trials' },
-              { org: 'Spotify', year: '2018-20', problem: 'Personalizing home screen shelves and card rankings.', algo: 'Epsilon-Greedy Bandits', result: 'Powers shelf/card ranking for 400M+ users' },
-            ].map((cs) => (
-              <div key={cs.org} className="bg-surface rounded-xl p-4 border border-surface-lighter">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-bold text-primary-light">{cs.org}</span>
-                  <span className="text-xs text-text-muted">{cs.year}</span>
-                </div>
-                <p className="text-xs text-text-muted mb-2">{cs.problem}</p>
-                <p className="text-xs text-primary-light italic mb-2">{cs.algo}</p>
-                <p className="text-xs font-bold text-accent-green m-0">{cs.result}</p>
-              </div>
-            ))}
-          </div>
-
           <Callout type="insight">
             In all these cases, the core challenge is identical: you must make decisions <em>now</em> while still
             learning which option is best. Every exploration has a cost, but so does committing too early to a
@@ -698,6 +676,143 @@ export function BanditGuidePage() {
           </div>
         </Accordion>
 
+      </div>
+
+      {/* ══════════════════════════════════════════
+         REAL-WORLD APPLICATIONS (standalone section)
+         ══════════════════════════════════════════ */}
+      <div className="mt-12">
+        <h2 className="text-2xl font-bold text-text border-l-4 border-primary pl-4 mb-6">
+          Real-World Applications
+        </h2>
+        <p className="text-sm text-text-muted mb-6">
+          Bandit algorithms aren't just theory — they power decisions at the world's largest companies and most important institutions.
+          Here are ten landmark deployments with links to the original research.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {[
+            {
+              org: 'Netflix', year: '2017-18',
+              desc: 'Personalizing movie/show artwork per user using contextual bandits with Thompson Sampling. Each subscriber sees the thumbnail most likely to make them click, selected from dozens of candidate images in real time.',
+              algo: 'Thompson Sampling (Contextual Bandits)',
+              result: 'Significant engagement lift across 100M+ subscribers',
+              links: [
+                { label: 'Blog', url: 'https://netflixtechblog.com/artwork-personalization-c589f074ad76' },
+                { label: 'Paper', url: 'https://dl.acm.org/doi/10.1145/3240323.3241729' },
+              ],
+            },
+            {
+              org: 'Yahoo!', year: '2010',
+              desc: 'LinUCB for personalized news recommendation on the Yahoo! front page. The system modeled each user-article pair with a linear contextual bandit, selecting articles to maximize click-through rate.',
+              algo: 'LinUCB (Linear Upper Confidence Bound)',
+              result: '12.5% CTR lift over context-free bandits across 45M+ events',
+              links: [
+                { label: 'Paper', url: 'https://arxiv.org/abs/1003.0146' },
+              ],
+            },
+            {
+              org: 'Google', year: '2013',
+              desc: 'Bayesian bandit-powered website content experiments in Google Analytics. Instead of waiting weeks for A/B test significance, the system automatically shifts traffic toward winning variants.',
+              algo: 'Bayesian Bandits (Multi-Armed)',
+              result: '~172 days saved per test vs. traditional A/B testing',
+              links: [
+                { label: 'Blog', url: 'https://analytics.googleblog.com/2013/01/multi-armed-bandit-experiments.html' },
+                { label: 'Paper', url: 'https://research.google.com/pubs/archive/42550.pdf' },
+              ],
+            },
+            {
+              org: 'I-SPY 2 Trial', year: '2010-present',
+              desc: 'Bayesian adaptive randomization for breast cancer clinical trials. The system assigns patients to the most promising experimental treatment based on accumulating evidence, accelerating drug discovery while minimizing patient exposure to ineffective drugs.',
+              algo: 'Bayesian Adaptive Randomization',
+              result: '7 of 12 experimental drugs graduated to phase 3',
+              links: [
+                { label: 'Paper (NEJM)', url: 'https://www.nejm.org/doi/full/10.1056/NEJMoa1513749' },
+                { label: 'Overview', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC7731787/' },
+              ],
+            },
+            {
+              org: 'Spotify', year: '2018-20',
+              desc: 'BaRT (Bandits for Recommendations as Treatments) for home screen shelf personalization. The system decides which content shelves to show each user and in what order, using bandits with explainable recommendations.',
+              algo: 'BaRT — Bandits for Recommendations as Treatments',
+              result: 'Powers personalized shelf ranking for 400M+ users',
+              links: [
+                { label: 'Paper', url: 'https://dl.acm.org/doi/10.1145/3240323.3240354' },
+                { label: 'Blog', url: 'https://engineering.atspotify.com/2020/01/for-your-ears-only-personalizing-spotify-home-with-machine-learning' },
+              ],
+            },
+            {
+              org: 'Microsoft', year: '2016-18',
+              desc: 'Multiworld Testing Decision Service using contextual bandits (Vowpal Wabbit). Deployed for personalized news on MSN.com, later productized as Azure Personalizer for any developer to use.',
+              algo: 'Contextual Bandits (Vowpal Wabbit)',
+              result: '25% click lift on personalized news',
+              links: [
+                { label: 'Paper', url: 'https://arxiv.org/abs/1606.03966' },
+                { label: 'Blog', url: 'https://www.microsoft.com/en-us/research/blog/contextual-bandit-breakthrough-enables-deeper-personalization/' },
+              ],
+            },
+            {
+              org: 'Stitch Fix', year: '2020',
+              desc: 'Thompson Sampling bandits for landing page optimization, reducing the opportunity cost of traditional A/B tests by dynamically allocating traffic to higher-performing variants.',
+              algo: 'Thompson Sampling',
+              result: 'Reduced opportunity cost vs. traditional A/B tests',
+              links: [
+                { label: 'Blog', url: 'https://multithreaded.stitchfix.com/blog/2020/08/05/bandits/' },
+              ],
+            },
+            {
+              org: 'Meta / Facebook', year: '2018-19',
+              desc: 'Horizon/ReAgent platform for push notification optimization using deep RL and contextual bandits. The system decides when and what to notify each user to maximize engagement without causing notification fatigue.',
+              algo: 'Deep RL + Contextual Bandits (Horizon/ReAgent)',
+              result: 'RL model outperformed supervised learning baseline',
+              links: [
+                { label: 'Paper', url: 'https://arxiv.org/abs/1811.00260' },
+                { label: 'GitHub', url: 'https://github.com/facebookresearch/ReAgent' },
+              ],
+            },
+            {
+              org: 'DoorDash', year: '2020-22',
+              desc: 'Hierarchical Bayesian Thompson Sampling for personalized cuisine filter recommendations. The system solves the cold-start problem by sharing information across similar users and cuisines.',
+              algo: 'Hierarchical Bayesian Thompson Sampling',
+              result: 'Solved cold-start problem for new user personalization',
+              links: [
+                { label: 'Blog', url: 'https://doordash.engineering/2020/01/27/personalized-cuisine-filter/' },
+              ],
+            },
+            {
+              org: 'Twitter / X', year: '2023',
+              desc: 'Open-sourced recommendation algorithm with explore-exploit components for the "For You" timeline. Revealed internal engagement weightings (e.g. Retweets weighted ~20x a Like) and bandit-style content exploration.',
+              algo: 'Explore-Exploit Bandits (Timeline Ranking)',
+              result: 'Powers "For You" feed for 500M+ users',
+              links: [
+                { label: 'Blog', url: 'https://blog.x.com/engineering/en_us/topics/open-source/2023/twitter-recommendation-algorithm' },
+                { label: 'GitHub', url: 'https://github.com/twitter/the-algorithm' },
+              ],
+            },
+          ].map((cs) => (
+            <div key={cs.org} className="bg-surface rounded-xl p-5 border border-surface-lighter">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-bold text-primary-light">{cs.org}</span>
+                <span className="text-xs text-text-muted bg-surface-light px-2 py-0.5 rounded-full">{cs.year}</span>
+              </div>
+              <p className="text-xs text-text-muted leading-relaxed mb-2">{cs.desc}</p>
+              <p className="text-xs text-primary-light italic mb-2">{cs.algo}</p>
+              <p className="text-xs font-bold text-accent-green mb-2">{cs.result}</p>
+              <div className="flex flex-wrap gap-2">
+                {cs.links.map((link) => (
+                  <a
+                    key={link.label}
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[11px] font-medium text-primary-light bg-primary/10 hover:bg-primary/20 px-2.5 py-1 rounded-full no-underline transition-colors"
+                  >
+                    {link.label} &rarr;
+                  </a>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Footer */}

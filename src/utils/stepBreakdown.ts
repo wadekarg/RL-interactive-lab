@@ -300,8 +300,6 @@ export function generateTDFormula(bd: TDStepBreakdown): string {
   }
 
   // Non-terminal
-  const nsLabel = `(${bd.nextState.row},${bd.nextState.col})`
-
   let bootstrapLine: string
   if (bd.algorithm === 'q-learning') {
     bootstrapLine = `\\text{Target} &= r + \\gamma \\cdot \\max_{a'} Q(s',a')`

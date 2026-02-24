@@ -213,6 +213,40 @@ export function GridWorldGuidePage() {
             closer to real-world problems.
           </Callout>
 
+          <h3 className="text-sm font-bold text-primary-light uppercase tracking-wider mb-2 mt-6">
+            This Has a Name: The Markov Decision Process (MDP)
+          </h3>
+          <p className="text-sm text-text leading-relaxed mb-3">
+            These components — states, actions, rewards, transitions, a discount factor — together form a{' '}
+            <strong>Markov Decision Process (MDP)</strong>, the formal framework behind every algorithm in this guide.
+          </p>
+          <p className="text-sm text-text leading-relaxed mb-4">
+            The key property: what happens next depends <em>only</em> on the current state, not on how you got
+            there. Boru in cell (2,3) faces the same choices whether he walked straight there or took a detour.
+            This "memoryless" property is what makes the math tractable.
+          </p>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 my-4">
+            {[
+              { symbol: 'S', label: 'States', def: 'All cells on the grid' },
+              { symbol: 'A', label: 'Actions', def: 'Up, Down, Left, Right' },
+              { symbol: 'R', label: 'Rewards', def: 'Feedback after each step' },
+              { symbol: 'T', label: 'Transitions', def: 'How actions change state' },
+              { symbol: '\u03B3', label: 'Discount', def: 'How much future matters' },
+            ].map((el) => (
+              <div key={el.symbol} className="bg-surface rounded-lg p-3 text-center">
+                <span className="text-lg font-bold text-primary-light">{el.symbol}</span>
+                <p className="text-xs font-semibold text-text mt-1 mb-0">{el.label}</p>
+                <p className="text-xs text-text-muted mt-1 mb-0">{el.def}</p>
+              </div>
+            ))}
+          </div>
+
+          <Callout type="insight">
+            Every algorithm in this guide — Q-Learning, SARSA, Value Iteration, Policy Iteration — is a different
+            strategy for solving an MDP. Learn this framework, and you've learned the language of reinforcement learning.
+          </Callout>
+
           <SimButton label="See Boru's world in the simulator" className="mt-2" />
         </Accordion>
 
@@ -238,28 +272,6 @@ export function GridWorldGuidePage() {
                 </div>
                 <p className="text-xs text-text-muted mb-2">{card.desc}</p>
                 <p className="text-xs text-primary-light italic m-0">{card.frame}</p>
-              </div>
-            ))}
-          </div>
-
-          {/* Real-World Success Stories */}
-          <h3 className="text-sm font-bold text-primary-light uppercase tracking-wider mt-6 mb-3">Real-World Success Stories</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {[
-              { org: 'DeepMind', year: '2013-15', problem: 'Playing Atari games from raw pixels with no game-specific knowledge.', algo: 'DQN (Deep Q-Network)', result: 'Superhuman performance in 29+ of 49 Atari games' },
-              { org: 'DeepMind', year: '2015-17', problem: 'Mastering the ancient board game Go, considered intractable for AI.', algo: 'Policy Gradient RL + Value Networks + MCTS', result: 'Beat world champion Lee Sedol 4-1' },
-              { org: 'DeepMind + Google', year: '2016-18', problem: 'Optimizing data center cooling systems to reduce energy consumption.', algo: 'Deep Reinforcement Learning', result: '40% reduction in cooling energy usage' },
-              { org: 'OpenAI', year: '2019', problem: 'Solving a Rubik\'s Cube with a dexterous robot hand.', algo: 'PPO (Proximal Policy Optimization)', result: 'Solves one-handed ~60% of the time' },
-              { org: 'Waymo', year: '2022-25', problem: 'Planning safe driving behavior for autonomous vehicles.', algo: 'Imitation Learning + RL / Conservative Q-Learning', result: '38% fewer failures, 7.4\u00D7 fewer collisions vs. baselines' },
-            ].map((cs) => (
-              <div key={cs.org + cs.year} className="bg-surface rounded-xl p-4 border border-surface-lighter">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-bold text-primary-light">{cs.org}</span>
-                  <span className="text-xs text-text-muted">{cs.year}</span>
-                </div>
-                <p className="text-xs text-text-muted mb-2">{cs.problem}</p>
-                <p className="text-xs text-primary-light italic mb-2">{cs.algo}</p>
-                <p className="text-xs font-bold text-accent-green m-0">{cs.result}</p>
               </div>
             ))}
           </div>
@@ -924,10 +936,11 @@ export function GridWorldGuidePage() {
               <h4 className="text-sm font-bold text-text mb-1">Partial Observability (POMDPs)</h4>
               <p className="text-xs text-text-muted italic mb-2">"What if Boru can't see the whole grid?"</p>
               <p className="text-sm text-text-muted leading-relaxed mb-2">
-                We assumed Boru knows exactly which cell he's in. But what if he can only see the cells immediately
-                around him? Or what if there's fog? This is a <strong>Partially Observable MDP</strong>. The agent must
-                maintain a <em>belief</em> about its state — a probability distribution over where it might be — and
-                make decisions under this uncertainty.
+                In Section 2, we defined an MDP where Boru always knows exactly which cell he's in. But what if he can
+                only see the cells immediately around him? Or what if there's fog? A{' '}
+                <strong>Partially Observable MDP (POMDP)</strong> relaxes this assumption. The agent must maintain a{' '}
+                <em>belief</em> about its state — a probability distribution over where it might be — and make
+                decisions under this uncertainty.
               </p>
               <p className="text-xs text-primary-light">This matters because: almost every real-world problem is partially observable. A self-driving car can't see around corners. A doctor can't observe a patient's full internal state.</p>
             </div>
@@ -982,6 +995,145 @@ export function GridWorldGuidePage() {
           </div>
         </Accordion>
 
+      </div>
+
+      {/* ══════════════════════════════════════════
+         REAL-WORLD APPLICATIONS (standalone section)
+         ══════════════════════════════════════════ */}
+      <div className="mt-12">
+        <h2 className="text-2xl font-bold text-text border-l-4 border-primary pl-4 mb-6">
+          Real-World Applications
+        </h2>
+        <p className="text-sm text-text-muted mb-6">
+          Grid worlds are a learning tool — but the same algorithms and ideas power some of the most impressive AI systems ever built.
+          Here are ten landmark applications with links to the original research.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {[
+            {
+              org: 'DeepMind', year: '2013-15',
+              desc: 'DQN playing 49 Atari games from raw pixels with no game-specific knowledge. A single neural network learned to play diverse games — from Breakout to Space Invaders — achieving superhuman performance on 29 of 49 titles.',
+              algo: 'DQN (Deep Q-Network)',
+              result: 'Superhuman on 29 of 49 games — first general deep RL agent',
+              links: [
+                { label: 'Paper (Nature)', url: 'https://www.nature.com/articles/nature14236' },
+                { label: 'arXiv', url: 'https://arxiv.org/abs/1312.5602' },
+              ],
+            },
+            {
+              org: 'DeepMind', year: '2015-16',
+              desc: 'AlphaGo using policy/value networks combined with Monte Carlo Tree Search to master Go — a game with roughly 10^170 possible board positions, long considered a grand challenge for AI.',
+              algo: 'Policy/Value Networks + MCTS',
+              result: 'Beat world champion Lee Sedol 4-1',
+              links: [
+                { label: 'Paper (Nature)', url: 'https://research.google/pubs/mastering-the-game-of-go-with-deep-neural-networks-and-tree-search/' },
+                { label: 'Project', url: 'https://deepmind.google/research/projects/alphago/' },
+              ],
+            },
+            {
+              org: 'DeepMind + Google', year: '2016-18',
+              desc: 'Deep RL for autonomous data center cooling. The system learned to manipulate cooling parameters (fans, pumps, temperatures) to minimize energy while maintaining safe operating conditions — the first autonomous AI industrial control at Google scale.',
+              algo: 'Deep Reinforcement Learning',
+              result: '40% reduction in cooling energy',
+              links: [
+                { label: 'Blog (2016)', url: 'https://deepmind.google/discover/blog/deepmind-ai-reduces-google-data-centre-cooling-bill-by-40/' },
+                { label: 'Blog (2018)', url: 'https://deepmind.google/discover/blog/safety-first-ai-for-autonomous-data-centre-cooling-and-industrial-control/' },
+              ],
+            },
+            {
+              org: 'OpenAI', year: '2019',
+              desc: 'Dactyl robot hand solving a Rubik\'s Cube using PPO with Automatic Domain Randomization. Trained entirely in simulation (~13,000 years of experience) and transferred zero-shot to real hardware.',
+              algo: 'PPO + Automatic Domain Randomization',
+              result: 'Sim-to-real transfer for dexterous manipulation',
+              links: [
+                { label: 'Blog', url: 'https://openai.com/index/solving-rubiks-cube/' },
+                { label: 'Paper', url: 'https://arxiv.org/abs/1910.07113' },
+              ],
+            },
+            {
+              org: 'Waymo', year: '2022-23',
+              desc: 'BC-SAC combining behavioral cloning (imitation learning) with Soft Actor-Critic RL for autonomous driving. The RL fine-tuning fixed edge cases where imitation alone failed, especially in rare safety-critical scenarios.',
+              algo: 'BC-SAC (Behavioral Cloning + Soft Actor-Critic)',
+              result: '38% fewer safety-critical events on hardest scenarios',
+              links: [
+                { label: 'Paper', url: 'https://arxiv.org/pdf/2212.11419' },
+                { label: 'Waymo Research', url: 'https://waymo.com/research/imitation-is-not-enough-robustifying-imitation-with-reinforcement-learning/' },
+              ],
+            },
+            {
+              org: 'OpenAI', year: '2022',
+              desc: 'RLHF (Reinforcement Learning from Human Feedback) with PPO to align ChatGPT. Human raters ranked model outputs; a reward model was trained on these rankings, then used to fine-tune GPT via RL. A 1.3B parameter InstructGPT was preferred over the 175B GPT-3.',
+              algo: 'RLHF with PPO',
+              result: '1.3B InstructGPT preferred over 175B GPT-3',
+              links: [
+                { label: 'Paper', url: 'https://arxiv.org/abs/2203.02155' },
+                { label: 'Blog', url: 'https://openai.com/index/instruction-following/' },
+              ],
+            },
+            {
+              org: 'DeepMind', year: '2020-21',
+              desc: 'AlphaFold 2 for protein structure prediction. Combining attention-based neural networks with RL-inspired iterative refinement, it solved a 50-year grand challenge in biology and predicted structures for ~200M proteins.',
+              algo: 'Attention Networks + Iterative Refinement',
+              result: '92.4 median GDT on CASP14 — 2024 Nobel Prize in Chemistry',
+              links: [
+                { label: 'Paper (Nature)', url: 'https://www.nature.com/articles/s41586-021-03819-2' },
+                { label: 'Blog', url: 'https://deepmind.google/discover/blog/alphafold-a-solution-to-a-50-year-old-grand-challenge-in-biology/' },
+              ],
+            },
+            {
+              org: 'DeepMind + EPFL', year: '2022',
+              desc: 'Deep RL controlling superheated plasma in a real tokamak fusion reactor (TCV). The controller learned to shape and maintain plasma configurations that human engineers had never achieved — including sustaining two simultaneous plasma droplets.',
+              algo: 'Deep RL (Actor-Critic)',
+              result: 'First to sustain two plasma droplets simultaneously',
+              links: [
+                { label: 'Paper (Nature)', url: 'https://www.nature.com/articles/s41586-021-04301-9' },
+                { label: 'Blog', url: 'https://deepmind.google/discover/blog/accelerating-fusion-science-through-learned-plasma-control/' },
+              ],
+            },
+            {
+              org: 'Boston Dynamics + RAI', year: '2023-24',
+              desc: 'End-to-end RL for Spot robot locomotion. The policy, trained entirely in simulation, achieved 3x the default walking speed (5.2 m/s) with robustness to pushes, uneven terrain, and unexpected obstacles.',
+              algo: 'End-to-End RL (Sim-to-Real Transfer)',
+              result: '3x default speed (5.2 m/s) with robustness to disturbances',
+              links: [
+                { label: 'Blog', url: 'https://bostondynamics.com/blog/starting-on-the-right-foot-with-reinforcement-learning/' },
+              ],
+            },
+            {
+              org: 'OpenAI', year: '2018-19',
+              desc: 'OpenAI Five playing Dota 2 — a complex 5v5 real-time strategy game — using scaled PPO with self-play. The system made ~20,000 strategic decisions per game across a 45-minute match.',
+              algo: 'PPO + Self-Play (scaled)',
+              result: 'Beat world champions (Team OG); 99.4% public match win rate',
+              links: [
+                { label: 'Paper', url: 'https://arxiv.org/abs/1912.06680' },
+                { label: 'Blog', url: 'https://openai.com/index/dota-2-with-large-scale-deep-reinforcement-learning/' },
+              ],
+            },
+          ].map((cs) => (
+            <div key={cs.org + cs.year} className="bg-surface rounded-xl p-5 border border-surface-lighter">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-bold text-primary-light">{cs.org}</span>
+                <span className="text-xs text-text-muted bg-surface-light px-2 py-0.5 rounded-full">{cs.year}</span>
+              </div>
+              <p className="text-xs text-text-muted leading-relaxed mb-2">{cs.desc}</p>
+              <p className="text-xs text-primary-light italic mb-2">{cs.algo}</p>
+              <p className="text-xs font-bold text-accent-green mb-2">{cs.result}</p>
+              <div className="flex flex-wrap gap-2">
+                {cs.links.map((link) => (
+                  <a
+                    key={link.label}
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[11px] font-medium text-primary-light bg-primary/10 hover:bg-primary/20 px-2.5 py-1 rounded-full no-underline transition-colors"
+                  >
+                    {link.label} &rarr;
+                  </a>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Footer */}

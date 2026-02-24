@@ -228,7 +228,7 @@ function BreakdownContent({ bd }: { bd: BanditStepBreakdown }) {
 
 // ─── Epsilon-Greedy Arm Table ────────────────────────────────────────────────
 
-function BaseArmTable({ arms, action }: { arms: BanditArmSnapshot[]; action: number }) {
+function BaseArmTable({ arms, action: _action }: { arms: BanditArmSnapshot[]; action: number }) {
   return (
     <div>
       <h4 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2">
@@ -281,7 +281,7 @@ function BaseArmTable({ arms, action }: { arms: BanditArmSnapshot[]; action: num
 
 // ─── UCB Arm Table ───────────────────────────────────────────────────────────
 
-function UCBArmTable({ arms, action }: { arms: UCBArmSnapshot[]; action: number }) {
+function UCBArmTable({ arms, action: _action }: { arms: UCBArmSnapshot[]; action: number }) {
   return (
     <div>
       <h4 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2">
@@ -334,7 +334,7 @@ function UCBArmTable({ arms, action }: { arms: UCBArmSnapshot[]; action: number 
 
 // ─── Thompson Sampling Arm Table ─────────────────────────────────────────────
 
-function ThompsonArmTable({ arms, action }: { arms: ThompsonArmSnapshot[]; action: number }) {
+function ThompsonArmTable({ arms, action: _action }: { arms: ThompsonArmSnapshot[]; action: number }) {
   return (
     <div>
       <h4 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2">
