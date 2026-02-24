@@ -15,6 +15,13 @@ const labs = [
     icon: '\uD83D\uDC18',
     tag: '4 algorithms + editor',
   },
+  {
+    title: "Bhrigu's Rocket Landing",
+    description: 'Balance a rocket on a launchpad using continuous control. Bridge from tabular RL to modern deep RL with discretization and policy gradients.',
+    path: '/cartpole',
+    icon: '\uD83D\uDE80',
+    tag: '3 algorithms',
+  },
 ]
 
 export function HomePage() {
@@ -29,7 +36,7 @@ export function HomePage() {
           Adjust hyperparameters, watch agents learn in real time, and build intuition.
         </p>
         <div className="flex justify-center gap-4 text-xs text-text-muted">
-          <span className="bg-surface-light px-3 py-1 rounded-full">7 algorithms</span>
+          <span className="bg-surface-light px-3 py-1 rounded-full">10 algorithms</span>
           <span className="bg-surface-light px-3 py-1 rounded-full">Interactive controls</span>
           <span className="bg-surface-light px-3 py-1 rounded-full">No backend needed</span>
           <span className="bg-surface-light px-3 py-1 rounded-full">Educational</span>

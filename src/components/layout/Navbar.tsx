@@ -6,6 +6,7 @@ const navItems = [
   { path: '/', label: 'Home' },
   { path: '/bandit', label: 'Multi-Armed Bandit' },
   { path: '/gridworld', label: 'GridWorld' },
+  { path: '/cartpole', label: 'Cart-Pole' },
 ]
 
 const THEME_META: Record<Theme, { icon: string; label: string }> = {
