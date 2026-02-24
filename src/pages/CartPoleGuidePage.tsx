@@ -134,7 +134,7 @@ export function CartPoleGuidePage() {
           Cart-Pole &amp; Continuous Control
         </h1>
         <p className="text-lg text-text-muted max-w-2xl mx-auto">
-          From grids to real numbers. Follow Bhrigu the rocket as it learns to balance
+          From grids to real numbers. Follow Bhrigu as it learns to land on Mars
           in a world where states are continuous — the bridge to modern deep RL.
         </p>
         <div className="flex justify-center gap-3 mt-4 text-xs text-text-muted">
@@ -184,10 +184,10 @@ export function CartPoleGuidePage() {
         </Accordion>
 
         {/* ── SECTION 2 ── */}
-        <Accordion number={2} title="Meet Bhrigu: A Rocket Learning to Land">
+        <Accordion number={2} title="Meet Bhrigu: Landing on Mars">
           <p className="text-sm text-text leading-relaxed mb-4">
-            Bhrigu is a small rocket attempting to land on a launchpad. The physics are simple: a pole (the rocket)
-            is balanced on a cart (the landing pad). At each moment, Bhrigu can fire a left or right thruster.
+            Bhrigu is a small rocket descending through the thin Martian atmosphere toward a landing pad on Jezero Crater.
+            The physics are simple: a pole (the rocket) is balanced on a cart (the landing pad). At each moment, Bhrigu can fire a left or right thruster.
           </p>
 
           <div className="bg-surface rounded-lg p-4 mb-4">
@@ -597,10 +597,10 @@ export function CartPoleGuidePage() {
         </Accordion>
 
         {/* ── SECTION 10 ── */}
-        <Accordion number={10} title="Going Deeper: From Bhrigu to SpaceX">
+        <Accordion number={10} title="Going Deeper: From Mars to Beyond">
           <p className="text-sm text-text leading-relaxed mb-5">
-            Cart-Pole is the "Hello World" of continuous control RL. The same ideas — in more sophisticated
-            forms — power real rocket landings, robotic manipulation, and game-playing AI.
+            Bhrigu's Mars landing is the "Hello World" of continuous control RL. The same ideas — in more
+            sophisticated forms — power real interplanetary landings, robotic manipulation, and game-playing AI.
           </p>
 
           <div className="flex flex-col gap-4">
@@ -627,15 +627,14 @@ export function CartPoleGuidePage() {
             </div>
 
             <div className="bg-surface rounded-xl p-4 border border-surface-lighter">
-              <h4 className="text-sm font-bold text-text mb-1">Real Rocket Landing</h4>
-              <p className="text-xs text-text-muted italic mb-2">"From Cart-Pole to SpaceX Falcon 9"</p>
+              <h4 className="text-sm font-bold text-text mb-1">Real Mars Landings</h4>
+              <p className="text-xs text-text-muted italic mb-2">"From Bhrigu to Perseverance and beyond"</p>
               <p className="text-sm text-text-muted leading-relaxed mb-2">
-                SpaceX's autonomous landing system uses convex optimization (not RL), but the state space is
-                the same idea: position, velocity, orientation, angular rates — just in 3D instead of 2D.
-                Research groups have successfully trained RL agents to land rockets in simulation using
-                algorithms descended from what you've seen here.
+                NASA's Mars landers and SpaceX's Falcon 9 use similar state spaces: position, velocity,
+                orientation, angular rates — just in 3D instead of 2D. Research groups have successfully
+                trained RL agents to land rockets in simulation using algorithms descended from what you've seen here.
               </p>
-              <p className="text-xs text-primary-light">Bhrigu's 4-dimensional state space × 2 actions → a real rocket's 12-dimensional state × continuous thrust is a difference of degree, not kind.</p>
+              <p className="text-xs text-primary-light">Bhrigu's 4-dimensional state space × 2 actions → a real lander's 12-dimensional state × continuous thrust is a difference of degree, not kind.</p>
             </div>
 
             <div className="bg-surface rounded-xl p-4 border border-surface-lighter">
@@ -666,7 +665,7 @@ export function CartPoleGuidePage() {
       {/* Footer */}
       <div className="mt-10 text-center">
         <p className="text-sm text-text-muted mb-3">
-          Now that you understand the theory, see Bhrigu learn in real time.
+          Now that you understand the theory, help Bhrigu land on Mars in real time.
         </p>
         <SimButton label="Open the Cart-Pole Simulator" />
       </div>

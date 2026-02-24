@@ -91,7 +91,8 @@ export function CartPolePage() {
     stepCountRef.current++
 
     if (done) {
-      setEpisodeDurations((prev) => [...prev, stepsInEpisodeRef.current])
+      const duration = stepsInEpisodeRef.current  // capture before resetting
+      setEpisodeDurations((prev) => [...prev, duration])
       stateRef.current = environment.reset()
       episodeRef.current++
       stepsInEpisodeRef.current = 0
@@ -177,7 +178,7 @@ export function CartPolePage() {
               <span className="text-2xl mr-2">{'\uD83D\uDE80'}</span> {cartpoleIntro.title}
             </h1>
             <p className="text-base text-primary-light mt-1 font-medium">
-              Help Bhrigu learn to balance and land using Reinforcement Learning
+              Help Bhrigu land safely on Mars using Reinforcement Learning
             </p>
           </div>
           <div className="flex items-center gap-2">
