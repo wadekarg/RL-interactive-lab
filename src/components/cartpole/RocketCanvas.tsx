@@ -445,7 +445,7 @@ export function RocketCanvas({ state, action, done, survived500, episode, stepIn
       ctx.fillText('LANDED!', w / 2, h * 0.38)
       ctx.font = '16px system-ui'
       ctx.fillStyle = pal.textMuted
-      ctx.fillText('500 steps \u2014 safe on Mars!', w / 2, h * 0.38 + 40)
+      ctx.fillText('500 steps \u2014 perfect landing! Mars awaits!', w / 2, h * 0.38 + 40)
     }
 
     // ── State overlay (bottom-left) ──

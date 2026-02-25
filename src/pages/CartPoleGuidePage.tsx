@@ -134,7 +134,7 @@ export function CartPoleGuidePage() {
           Cart-Pole &amp; Continuous Control
         </h1>
         <p className="text-lg text-text-muted max-w-2xl mx-auto">
-          From grids to real numbers. Follow Dabak as it learns to land on Mars
+          From grids to real numbers. Follow Dabak as it learns to land
           in a world where states are continuous — the bridge to modern deep RL.
         </p>
         <div className="flex justify-center gap-3 mt-4 text-xs text-text-muted">
@@ -184,10 +184,10 @@ export function CartPoleGuidePage() {
         </Accordion>
 
         {/* ── SECTION 2 ── */}
-        <Accordion number={2} title="Meet Dabak: Landing on Mars">
+        <Accordion number={2} title="Meet Dabak: A Rocket Learning to Land">
           <p className="text-sm text-text leading-relaxed mb-4">
-            Dabak is a small rocket descending through the thin Martian atmosphere toward a landing pad on Jezero Crater.
-            The physics are simple: a pole (the rocket) is balanced on a cart (the landing pad). At each moment, Dabak can fire a left or right thruster.
+            Dabak is a small rocket learning to land on a launchpad. It dreams of one day reaching Mars, but first it must
+            master the basics right here on Earth. The physics are simple: a pole (the rocket) is balanced on a cart (the landing pad). At each moment, Dabak can fire a left or right thruster.
           </p>
 
           <div className="bg-surface rounded-lg p-4 mb-4">
@@ -597,10 +597,10 @@ export function CartPoleGuidePage() {
         </Accordion>
 
         {/* ── SECTION 10 ── */}
-        <Accordion number={10} title="Going Deeper: From Mars to Beyond">
+        <Accordion number={10} title="Going Deeper: From Earth to Mars and Beyond">
           <p className="text-sm text-text leading-relaxed mb-5">
-            Dabak's Mars landing is the "Hello World" of continuous control RL. The same ideas — in more
-            sophisticated forms — power real interplanetary landings, robotic manipulation, and game-playing AI.
+            Dabak's landing challenge is the "Hello World" of continuous control RL. The same ideas — in more
+            sophisticated forms — power real rocket landings (including on Mars), robotic manipulation, and game-playing AI.
           </p>
 
           <div className="flex flex-col gap-4">
@@ -627,12 +627,13 @@ export function CartPoleGuidePage() {
             </div>
 
             <div className="bg-surface rounded-xl p-4 border border-surface-lighter">
-              <h4 className="text-sm font-bold text-text mb-1">Real Mars Landings</h4>
-              <p className="text-xs text-text-muted italic mb-2">"From Dabak to Perseverance and beyond"</p>
+              <h4 className="text-sm font-bold text-text mb-1">Real Rocket Landing — Dabak's Dream</h4>
+              <p className="text-xs text-text-muted italic mb-2">"From launchpad landings to Mars and beyond"</p>
               <p className="text-sm text-text-muted leading-relaxed mb-2">
-                NASA's Mars landers and SpaceX's Falcon 9 use similar state spaces: position, velocity,
-                orientation, angular rates — just in 3D instead of 2D. Research groups have successfully
-                trained RL agents to land rockets in simulation using algorithms descended from what you've seen here.
+                SpaceX's Falcon 9, NASA's Mars landers — they all use similar state spaces: position, velocity,
+                orientation, angular rates — just in 3D instead of 2D. Once Dabak masters landing here on Earth,
+                the same algorithms can scale to interplanetary missions. Research groups have already trained RL
+                agents to land rockets in simulation using algorithms descended from what you've seen here.
               </p>
               <p className="text-xs text-primary-light">Dabak's 4-dimensional state space × 2 actions → a real lander's 12-dimensional state × continuous thrust is a difference of degree, not kind.</p>
             </div>
@@ -665,7 +666,7 @@ export function CartPoleGuidePage() {
       {/* Footer */}
       <div className="mt-10 text-center">
         <p className="text-sm text-text-muted mb-3">
-          Now that you understand the theory, help Dabak land on Mars in real time.
+          Now that you understand the theory, help Dabak master landing in real time.
         </p>
         <SimButton label="Open the Cart-Pole Simulator" />
       </div>

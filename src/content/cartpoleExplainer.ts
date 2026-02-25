@@ -1,12 +1,12 @@
 export const cartpoleIntro = {
-  title: "Dabak's Mars Landing",
-  story: `Millions of kilometres from Earth, a small rocket named Dabak is descending through the thin Martian atmosphere toward a landing pad on Jezero Crater. Each attempt, Dabak enters from a slightly different angle and must figure out when to fire left or right thrusters to stay upright and touch down safely on the red dust.
+  title: "Dabak's Landing",
+  story: `On a dusty launchpad, a small rocket named Dabak is learning to land. Each attempt, Dabak fires from a slightly different angle and must figure out when to fire left or right thrusters to stay upright and touch down safely.
 
-Every moment Dabak stays balanced earns a point of fuel savings. But if the rocket tilts too far or drifts off the pad, the mission fails and Dabak must try again — there are no rescue crews on Mars.
+Every moment Dabak stays balanced earns a point of fuel savings. But if the rocket tilts too far or drifts off the pad, the mission fails and Dabak must try again.
 
-This is Dabak's challenge — and YOUR job is to help it learn using Reinforcement Learning algorithms. Unlike Boru's grid, Dabak's world is continuous — position, velocity, angle, and spin are all real numbers, not grid cells.`,
+Dabak dreams big — once it masters landing on Earth, it plans to take on Mars. But first, it needs YOUR help to learn using Reinforcement Learning algorithms. Unlike Boru's grid, Dabak's world is continuous — position, velocity, angle, and spin are all real numbers, not grid cells.`,
 
-  objective: `Keep the rocket balanced for as long as possible (up to 500 timesteps) as it descends onto the Martian landing pad. The agent must learn to apply left or right thrust at each moment to prevent the rocket from tipping over or drifting off the pad.`,
+  objective: `Keep the rocket balanced for as long as possible (up to 500 timesteps). The agent must learn to apply left or right thrust at each moment to prevent the rocket from tipping over or drifting off the landing pad.`,
 
   whatYouWillLearn: [
     'How continuous state spaces differ from discrete grids',
@@ -16,7 +16,7 @@ This is Dabak's challenge — and YOUR job is to help it learn using Reinforceme
     'How episode duration charts reveal learning progress',
   ],
 
-  howItWorks: `Dabak's state is described by 4 continuous numbers: horizontal position (x), velocity (v), tilt angle (θ), and angular velocity (ω). At each timestep, Dabak can fire a left or right thruster. If the tilt exceeds ±12° or the rocket drifts beyond ±2.4 units, the episode ends in a crash on the Martian surface. Surviving 500 steps means a perfect landing.`,
+  howItWorks: `Dabak's state is described by 4 continuous numbers: horizontal position (x), velocity (v), tilt angle (θ), and angular velocity (ω). At each timestep, Dabak can fire a left or right thruster. If the tilt exceeds ±12° or the rocket drifts beyond ±2.4 units, the episode ends in a crash. Surviving 500 steps means a perfect landing — one step closer to Mars.`,
 }
 
 export const cartpoleAlgorithms = {
@@ -93,7 +93,7 @@ export const cartpoleAlgorithms = {
 
 export const cartpoleParamExplanations: Record<string, string> = {
   alpha: 'Learning rate — how much Q-values shift after each step. Try 0.1 to start.',
-  gamma: 'Discount factor — how much Dabak values future survival vs. the current moment on Mars. High γ (0.99) = plan ahead. Low γ = short-sighted.',
+  gamma: 'Discount factor — how much Dabak values future survival vs. the current moment. High γ (0.99) = plan ahead. Low γ = short-sighted.',
   epsilon: 'Exploration rate — how often Dabak fires a random thruster instead of using its best estimate. Needed for discovery but hurts performance.',
   bins: 'Number of bins per state dimension. More bins = finer control but slower learning. Fewer bins = faster but coarser.',
   lr: 'Policy learning rate — how quickly the policy weights update. Too high = unstable. Too low = slow. Try 0.01.',

@@ -16,8 +16,8 @@ const labs = [
     tag: '4 algorithms + editor',
   },
   {
-    title: "Dabak's Mars Landing",
-    description: 'Land a rocket on Mars using continuous control. Bridge from tabular RL to modern deep RL with discretization and policy gradients.',
+    title: "Dabak's Landing",
+    description: 'Help a rocket learn to land using continuous control. Bridge from tabular RL to modern deep RL with discretization and policy gradients.',
     path: '/cartpole',
     icon: '\uD83D\uDE80',
     tag: '3 algorithms',

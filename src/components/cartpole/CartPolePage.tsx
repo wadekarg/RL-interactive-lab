@@ -178,7 +178,7 @@ export function CartPolePage() {
               <span className="text-2xl mr-2">{'\uD83D\uDE80'}</span> {cartpoleIntro.title}
             </h1>
             <p className="text-base text-primary-light mt-1 font-medium">
-              Help Dabak land safely on Mars using Reinforcement Learning
+              Help Dabak learn to land — and one day, reach Mars
             </p>
           </div>
           <div className="flex items-center gap-2">
