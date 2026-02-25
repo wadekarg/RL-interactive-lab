@@ -338,9 +338,14 @@ export function RocketCanvas({ state, action, done, survived500, episode, stepIn
     ctx.fillRect(padX, GROUND_Y - PAD_H, PAD_W, 2)
     ctx.fillRect(padX, GROUND_Y - 2, PAD_W, 2)
 
-    // ── Rocket ──
+    // ── Rocket (descends from sky over 500 steps) ──
     const rocketCx = mapX(state.x)
-    const rocketBaseY = GROUND_Y - PAD_H - NOZZLE_H - 4
+    const landedY = GROUND_Y - PAD_H - NOZZLE_H - 4
+    const skyY = ROCKET_H + NOSE_H + 30  // start near top of canvas
+    const descent = Math.min(stepInEpisode / 500, 1)
+    // ease-out for smooth deceleration as it approaches pad
+    const easedDescent = 1 - (1 - descent) * (1 - descent)
+    const rocketBaseY = skyY + (landedY - skyY) * easedDescent
 
     ctx.save()
     ctx.translate(rocketCx, rocketBaseY)
