@@ -448,29 +448,19 @@ export function RocketCanvas({ state, action, done, survived500, episode, stepIn
       ctx.fillText('500 steps \u2014 perfect landing! Mars awaits!', w / 2, h * 0.38 + 40)
     }
 
-    // ── State overlay (bottom-left) with dark background ──
+    // ── State overlay (top-left, in the sky) ──
     ctx.font = '12px monospace'
     ctx.textAlign = 'left'
-    ctx.textBaseline = 'bottom'
+    ctx.textBaseline = 'top'
+    ctx.fillStyle = pal.stars.replace(/[\d.]+\)$/, '0.9)')
     const stateLines = [
       `Ep ${episode}  Step ${stepInEpisode}`,
       `x: ${state.x.toFixed(2)}   v: ${state.xDot.toFixed(2)}`,
       `\u03B8: ${(state.theta * 180 / Math.PI).toFixed(1)}\u00B0   \u03C9: ${state.thetaDot.toFixed(2)}`,
     ]
     const lineH = 16
-    const olPadX = 8
-    const olPadY = 6
-    const boxH = stateLines.length * lineH + olPadY * 2
-    const boxW = 230
-    const boxY = h - boxH - 4
-    ctx.fillStyle = 'rgba(0,0,0,0.6)'
-    ctx.beginPath()
-    ctx.roundRect(4, boxY, boxW, boxH, 6)
-    ctx.fill()
-    ctx.fillStyle = '#ffffffdd'
-    const startY = h - 4 - olPadY
-    for (let i = stateLines.length - 1; i >= 0; i--) {
-      ctx.fillText(stateLines[i], 4 + olPadX, startY - (stateLines.length - 1 - i) * lineH)
+    for (let i = 0; i < stateLines.length; i++) {
+      ctx.fillText(stateLines[i], 10, 10 + i * lineH)
     }
   }, [state, action, done, survived500, episode, stepInEpisode, theme])
 
