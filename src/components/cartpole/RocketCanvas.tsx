@@ -467,7 +467,7 @@ export function RocketCanvas({ state, action, done, survived500, episode, stepIn
     ctx.beginPath()
     ctx.roundRect(4, boxY, boxW, boxH, 6)
     ctx.fill()
-    ctx.fillStyle = pal.text
+    ctx.fillStyle = '#ffffffdd'
     const startY = h - 4 - olPadY
     for (let i = stateLines.length - 1; i >= 0; i--) {
       ctx.fillText(stateLines[i], 4 + olPadX, startY - (stateLines.length - 1 - i) * lineH)
