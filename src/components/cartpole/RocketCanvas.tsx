@@ -45,8 +45,8 @@ const PALETTES: Record<Theme, RocketPalette> = {
     skyTop: '#060a1f',
     skyBottom: '#141830',
     stars: 'rgba(255,255,255,0.6)',
-    ground: '#2a2520',
-    groundLight: '#342e28',
+    ground: '#8b3a1a',
+    groundLight: '#a0522d',
     padTop: '#4a4540',
     padStripe: '#d97706',
     rocketBody: '#d0c8c0',
@@ -70,8 +70,8 @@ const PALETTES: Record<Theme, RocketPalette> = {
     skyTop: '#6ab4de',
     skyBottom: '#a8d8f0',
     stars: 'rgba(255,255,255,0.35)',
-    ground: '#c9b896',
-    groundLight: '#d8caa6',
+    ground: '#c2703c',
+    groundLight: '#d4875a',
     padTop: '#888078',
     padStripe: '#d97706',
     rocketBody: '#f5f0ea',
@@ -95,8 +95,8 @@ const PALETTES: Record<Theme, RocketPalette> = {
     skyTop: '#3a2850',
     skyBottom: '#5a3860',
     stars: 'rgba(255,240,200,0.5)',
-    ground: '#3a3028',
-    groundLight: '#443830',
+    ground: '#7a3318',
+    groundLight: '#924528',
     padTop: '#5a5048',
     padStripe: '#d97706',
     rocketBody: '#e8e0d8',
@@ -214,13 +214,13 @@ function drawRocket(ctx: CanvasRenderingContext2D, pal: RocketPalette) {
   ctx.arc(-2, -ROCKET_H * 0.78 - 2, WINDOW_R * 0.35, 0, Math.PI * 2)
   ctx.fill()
 
-  // "BHRIGU" label — vertical on rocket body
+  // "DABAK" label — vertical on rocket body
   ctx.save()
   ctx.font = 'bold 9px system-ui'
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
   ctx.fillStyle = pal.rocketLabel
-  const label = 'BHRIGU'
+  const label = 'DABAK'
   const labelStartY = -ROCKET_H * 0.58
   const letterSpacing = 9
   for (let i = 0; i < label.length; i++) {

@@ -134,13 +134,13 @@ export function CartPoleGuidePage() {
           Cart-Pole &amp; Continuous Control
         </h1>
         <p className="text-lg text-text-muted max-w-2xl mx-auto">
-          From grids to real numbers. Follow Bhrigu as it learns to land on Mars
+          From grids to real numbers. Follow Dabak as it learns to land on Mars
           in a world where states are continuous — the bridge to modern deep RL.
         </p>
         <div className="flex justify-center gap-3 mt-4 text-xs text-text-muted">
           <span className="bg-surface-light px-3 py-1 rounded-full">10 sections</span>
           <span className="bg-surface-light px-3 py-1 rounded-full">3 algorithms</span>
-          <span className="bg-surface-light px-3 py-1 rounded-full">Bhrigu narrative</span>
+          <span className="bg-surface-light px-3 py-1 rounded-full">Dabak narrative</span>
         </div>
       </div>
 
@@ -184,10 +184,10 @@ export function CartPoleGuidePage() {
         </Accordion>
 
         {/* ── SECTION 2 ── */}
-        <Accordion number={2} title="Meet Bhrigu: Landing on Mars">
+        <Accordion number={2} title="Meet Dabak: Landing on Mars">
           <p className="text-sm text-text leading-relaxed mb-4">
-            Bhrigu is a small rocket descending through the thin Martian atmosphere toward a landing pad on Jezero Crater.
-            The physics are simple: a pole (the rocket) is balanced on a cart (the landing pad). At each moment, Bhrigu can fire a left or right thruster.
+            Dabak is a small rocket descending through the thin Martian atmosphere toward a landing pad on Jezero Crater.
+            The physics are simple: a pole (the rocket) is balanced on a cart (the landing pad). At each moment, Dabak can fire a left or right thruster.
           </p>
 
           <div className="bg-surface rounded-lg p-4 mb-4">
@@ -217,7 +217,7 @@ export function CartPoleGuidePage() {
             <strong>Rules:</strong>
           </p>
           <ul className="text-sm text-text-muted space-y-1 mb-4">
-            <li className="flex items-start gap-2"><span className="text-primary-light">-</span>Bhrigu gets +1 reward for every timestep it stays balanced</li>
+            <li className="flex items-start gap-2"><span className="text-primary-light">-</span>Dabak gets +1 reward for every timestep it stays balanced</li>
             <li className="flex items-start gap-2"><span className="text-primary-light">-</span>Episode ends if tilt exceeds {'\u00B1'}12{'\u00B0'} or position exceeds {'\u00B1'}2.4 units</li>
             <li className="flex items-start gap-2"><span className="text-primary-light">-</span>Surviving 500 steps = perfect landing (maximum score)</li>
             <li className="flex items-start gap-2"><span className="text-primary-light">-</span>Only 2 actions: left thrust or right thrust</li>
@@ -228,20 +228,20 @@ export function CartPoleGuidePage() {
             The challenge is purely about <em>survival</em>. Episode duration IS the metric — longer is better.
           </Callout>
 
-          <SimButton label="See Bhrigu in the simulator" className="mt-2" />
+          <SimButton label="See Dabak in the simulator" className="mt-2" />
         </Accordion>
 
         {/* ── SECTION 3 ── */}
         <Accordion number={3} title="The State Space: Four Numbers That Describe Everything">
           <p className="text-sm text-text leading-relaxed mb-4">
-            Bhrigu's entire situation at any moment is captured by just 4 numbers. Together, they tell you
+            Dabak's entire situation at any moment is captured by just 4 numbers. Together, they tell you
             everything you need to know to decide what action to take.
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
             {[
               { symbol: 'x', name: 'Position', range: '[-2.4, 2.4]', desc: 'How far left or right of center. Outside this range = crash.', color: 'text-accent-blue' },
-              { symbol: 'v', name: 'Velocity', range: '(-\u221E, +\u221E)', desc: 'How fast Bhrigu is drifting. Positive = moving right.', color: 'text-accent-green' },
+              { symbol: 'v', name: 'Velocity', range: '(-\u221E, +\u221E)', desc: 'How fast Dabak is drifting. Positive = moving right.', color: 'text-accent-green' },
               { symbol: '\u03B8', name: 'Tilt Angle', range: '[-12\u00B0, 12\u00B0]', desc: 'How tilted the rocket is. Outside \u00B112\u00B0 = crash.', color: 'text-accent-yellow' },
               { symbol: '\u03C9', name: 'Angular Velocity', range: '(-\u221E, +\u221E)', desc: 'How fast the tilt is changing. The key to anticipating crashes.', color: 'text-accent-red' },
             ].map((v) => (
@@ -365,7 +365,7 @@ export function CartPoleGuidePage() {
           <StepBox steps={[
             {
               label: 'Observe continuous state: x=0.37, v=-0.12, \u03B8=0.021, \u03C9=0.85',
-              detail: 'Bhrigu reads its sensors. Four real numbers describe its complete situation.',
+              detail: 'Dabak reads its sensors. Four real numbers describe its complete situation.',
               type: 'neutral',
             },
             {
@@ -380,7 +380,7 @@ export function CartPoleGuidePage() {
             },
             {
               label: 'Execute action, observe reward (+1) and next state',
-              detail: 'Bhrigu fires the thruster, physics advances one timestep, and we get the new state + reward.',
+              detail: 'Dabak fires the thruster, physics advances one timestep, and we get the new state + reward.',
               type: 'exploit',
             },
             {
@@ -485,7 +485,7 @@ export function CartPoleGuidePage() {
 
           <StepBox steps={[
             {
-              label: 'Play a full episode (Bhrigu flies until crash or 500 steps)',
+              label: 'Play a full episode (Dabak flies until crash or 500 steps)',
               detail: 'Record every (state, action, reward) triple in a trajectory buffer.',
               type: 'explore',
             },
@@ -599,7 +599,7 @@ export function CartPoleGuidePage() {
         {/* ── SECTION 10 ── */}
         <Accordion number={10} title="Going Deeper: From Mars to Beyond">
           <p className="text-sm text-text leading-relaxed mb-5">
-            Bhrigu's Mars landing is the "Hello World" of continuous control RL. The same ideas — in more
+            Dabak's Mars landing is the "Hello World" of continuous control RL. The same ideas — in more
             sophisticated forms — power real interplanetary landings, robotic manipulation, and game-playing AI.
           </p>
 
@@ -628,13 +628,13 @@ export function CartPoleGuidePage() {
 
             <div className="bg-surface rounded-xl p-4 border border-surface-lighter">
               <h4 className="text-sm font-bold text-text mb-1">Real Mars Landings</h4>
-              <p className="text-xs text-text-muted italic mb-2">"From Bhrigu to Perseverance and beyond"</p>
+              <p className="text-xs text-text-muted italic mb-2">"From Dabak to Perseverance and beyond"</p>
               <p className="text-sm text-text-muted leading-relaxed mb-2">
                 NASA's Mars landers and SpaceX's Falcon 9 use similar state spaces: position, velocity,
                 orientation, angular rates — just in 3D instead of 2D. Research groups have successfully
                 trained RL agents to land rockets in simulation using algorithms descended from what you've seen here.
               </p>
-              <p className="text-xs text-primary-light">Bhrigu's 4-dimensional state space × 2 actions → a real lander's 12-dimensional state × continuous thrust is a difference of degree, not kind.</p>
+              <p className="text-xs text-primary-light">Dabak's 4-dimensional state space × 2 actions → a real lander's 12-dimensional state × continuous thrust is a difference of degree, not kind.</p>
             </div>
 
             <div className="bg-surface rounded-xl p-4 border border-surface-lighter">
@@ -665,7 +665,7 @@ export function CartPoleGuidePage() {
       {/* Footer */}
       <div className="mt-10 text-center">
         <p className="text-sm text-text-muted mb-3">
-          Now that you understand the theory, help Bhrigu land on Mars in real time.
+          Now that you understand the theory, help Dabak land on Mars in real time.
         </p>
         <SimButton label="Open the Cart-Pole Simulator" />
       </div>

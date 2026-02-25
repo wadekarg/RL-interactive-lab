@@ -1,10 +1,10 @@
 export const cartpoleIntro = {
-  title: "Bhrigu's Mars Landing",
-  story: `Millions of kilometres from Earth, a small rocket named Bhrigu is descending through the thin Martian atmosphere toward a landing pad on Jezero Crater. Each attempt, Bhrigu enters from a slightly different angle and must figure out when to fire left or right thrusters to stay upright and touch down safely on the red dust.
+  title: "Dabak's Mars Landing",
+  story: `Millions of kilometres from Earth, a small rocket named Dabak is descending through the thin Martian atmosphere toward a landing pad on Jezero Crater. Each attempt, Dabak enters from a slightly different angle and must figure out when to fire left or right thrusters to stay upright and touch down safely on the red dust.
 
-Every moment Bhrigu stays balanced earns a point of fuel savings. But if the rocket tilts too far or drifts off the pad, the mission fails and Bhrigu must try again — there are no rescue crews on Mars.
+Every moment Dabak stays balanced earns a point of fuel savings. But if the rocket tilts too far or drifts off the pad, the mission fails and Dabak must try again — there are no rescue crews on Mars.
 
-This is Bhrigu's challenge — and YOUR job is to help it learn using Reinforcement Learning algorithms. Unlike Boru's grid, Bhrigu's world is continuous — position, velocity, angle, and spin are all real numbers, not grid cells.`,
+This is Dabak's challenge — and YOUR job is to help it learn using Reinforcement Learning algorithms. Unlike Boru's grid, Dabak's world is continuous — position, velocity, angle, and spin are all real numbers, not grid cells.`,
 
   objective: `Keep the rocket balanced for as long as possible (up to 500 timesteps) as it descends onto the Martian landing pad. The agent must learn to apply left or right thrust at each moment to prevent the rocket from tipping over or drifting off the pad.`,
 
@@ -16,14 +16,14 @@ This is Bhrigu's challenge — and YOUR job is to help it learn using Reinforcem
     'How episode duration charts reveal learning progress',
   ],
 
-  howItWorks: `Bhrigu's state is described by 4 continuous numbers: horizontal position (x), velocity (v), tilt angle (θ), and angular velocity (ω). At each timestep, Bhrigu can fire a left or right thruster. If the tilt exceeds ±12° or the rocket drifts beyond ±2.4 units, the episode ends in a crash on the Martian surface. Surviving 500 steps means a perfect landing.`,
+  howItWorks: `Dabak's state is described by 4 continuous numbers: horizontal position (x), velocity (v), tilt angle (θ), and angular velocity (ω). At each timestep, Dabak can fire a left or right thruster. If the tilt exceeds ±12° or the rocket drifts beyond ±2.4 units, the episode ends in a crash on the Martian surface. Surviving 500 steps means a perfect landing.`,
 }
 
 export const cartpoleAlgorithms = {
   random: {
     name: 'Random Baseline',
     description:
-      'No learning at all — Bhrigu fires thrusters randomly. This establishes a baseline: pure luck typically survives ~20-30 steps.',
+      'No learning at all — Dabak fires thrusters randomly. This establishes a baseline: pure luck typically survives ~20-30 steps.',
     sections: [
       {
         title: 'How It Works',
@@ -40,7 +40,7 @@ export const cartpoleAlgorithms = {
   'discretized-q': {
     name: 'Discretized Q-Learning',
     description:
-      'The same Q-Learning from GridWorld, but adapted for continuous states by binning the 4 state variables into discrete buckets. Bhrigu learns a Q-table over these bins.',
+      'The same Q-Learning from GridWorld, but adapted for continuous states by binning the 4 state variables into discrete buckets. Dabak learns a Q-table over these bins.',
     sections: [
       {
         title: 'The Discretization Trick',
@@ -68,7 +68,7 @@ export const cartpoleAlgorithms = {
       {
         title: 'Policy Gradient Intuition',
         content:
-          'Imagine Bhrigu has a "preference" for left vs. right thrust in each state. After each episode, if the episode lasted long (good!), increase the probability of the actions taken. If it was short (bad!), decrease them. Over time, good action patterns become more likely.',
+          'Imagine Dabak has a "preference" for left vs. right thrust in each state. After each episode, if the episode lasted long (good!), increase the probability of the actions taken. If it was short (bad!), decrease them. Over time, good action patterns become more likely.',
         equation: '\\theta \\leftarrow \\theta + \\alpha \\sum_t (G_t - b) \\nabla_\\theta \\log \\pi_\\theta(a_t | s_t)',
       },
       {
@@ -93,8 +93,8 @@ export const cartpoleAlgorithms = {
 
 export const cartpoleParamExplanations: Record<string, string> = {
   alpha: 'Learning rate — how much Q-values shift after each step. Try 0.1 to start.',
-  gamma: 'Discount factor — how much Bhrigu values future survival vs. the current moment on Mars. High γ (0.99) = plan ahead. Low γ = short-sighted.',
-  epsilon: 'Exploration rate — how often Bhrigu fires a random thruster instead of using its best estimate. Needed for discovery but hurts performance.',
+  gamma: 'Discount factor — how much Dabak values future survival vs. the current moment on Mars. High γ (0.99) = plan ahead. Low γ = short-sighted.',
+  epsilon: 'Exploration rate — how often Dabak fires a random thruster instead of using its best estimate. Needed for discovery but hurts performance.',
   bins: 'Number of bins per state dimension. More bins = finer control but slower learning. Fewer bins = faster but coarser.',
   lr: 'Policy learning rate — how quickly the policy weights update. Too high = unstable. Too low = slow. Try 0.01.',
 }

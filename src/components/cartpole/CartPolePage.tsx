@@ -178,7 +178,7 @@ export function CartPolePage() {
               <span className="text-2xl mr-2">{'\uD83D\uDE80'}</span> {cartpoleIntro.title}
             </h1>
             <p className="text-base text-primary-light mt-1 font-medium">
-              Help Bhrigu land safely on Mars using Reinforcement Learning
+              Help Dabak land safely on Mars using Reinforcement Learning
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -352,7 +352,7 @@ export function CartPolePage() {
           {/* Stats */}
           <div className="p-4 bg-surface-light rounded-xl border border-surface-lighter">
             <h3 className="text-sm font-semibold text-text-muted uppercase tracking-wider mb-2">
-              Bhrigu's Progress
+              Dabak's Progress
             </h3>
             <div className="flex flex-col gap-2 text-sm">
               <div className="flex justify-between">
@@ -413,7 +413,7 @@ export function CartPolePage() {
             <div className="flex flex-col gap-1.5 text-xs">
               <div className="flex items-center gap-2">
                 <span className="text-base">{'\uD83D\uDE80'}</span>
-                <span className="text-text">Bhrigu the Rocket (agent)</span>
+                <span className="text-text">Dabak the Rocket (agent)</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="w-4 h-2 bg-yellow-500 rounded-sm inline-block" />

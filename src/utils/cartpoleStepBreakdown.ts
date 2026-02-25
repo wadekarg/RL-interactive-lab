@@ -287,9 +287,9 @@ export function generateCartPoleTDNarrative(bd: CartPoleTDBreakdown): string {
 
   const outcome = bd.done
     ? `Mission failed! Episode ${bd.episode} ends after ${bd.stepInEpisode + 1} steps.`
-    : `Bhrigu survives (+1 reward). Step ${bd.stepInEpisode + 1} of episode ${bd.episode}.`
+    : `Dabak survives (+1 reward). Step ${bd.stepInEpisode + 1} of episode ${bd.episode}.`
 
-  return `Bhrigu fired ${bd.actionName} (${moveType}). Bin [${bd.discretizedKey}] → [${bd.nextDiscretizedKey}]. ${outcome}`
+  return `Dabak fired ${bd.actionName} (${moveType}). Bin [${bd.discretizedKey}] → [${bd.nextDiscretizedKey}]. ${outcome}`
 }
 
 export function generateCartPoleReinforceNarrative(bd: CartPoleReinforceBreakdown): string {
@@ -299,9 +299,9 @@ export function generateCartPoleReinforceNarrative(bd: CartPoleReinforceBreakdow
 
   const outcome = bd.done
     ? `Mission ended. ${durText} Weights will be updated using the full episode trajectory.`
-    : `Bhrigu survives. Step ${bd.stepInEpisode + 1} of episode ${bd.episode}.`
+    : `Dabak survives. Step ${bd.stepInEpisode + 1} of episode ${bd.episode}.`
 
-  return `Bhrigu fired ${bd.actionName}. ${outcome}`
+  return `Dabak fired ${bd.actionName}. ${outcome}`
 }
 
 export function generateCartPoleRandomNarrative(bd: CartPoleRandomBreakdown): string {
@@ -309,5 +309,5 @@ export function generateCartPoleRandomNarrative(bd: CartPoleRandomBreakdown): st
     ? `Mission failed after ${bd.stepInEpisode + 1} steps. No learning — random baseline.`
     : `Step ${bd.stepInEpisode + 1} of episode ${bd.episode}. Firing randomly.`
 
-  return `Bhrigu fired ${bd.actionName} (random). ${outcome}`
+  return `Dabak fired ${bd.actionName} (random). ${outcome}`
 }
