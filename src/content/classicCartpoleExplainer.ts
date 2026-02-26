@@ -1,10 +1,10 @@
 export const classicCartpoleIntro = {
-  title: "Dabak's Training",
-  story: `Meet Dabak \u2014 our rocket. On a dusty test range, Dabak is bolted to a test stand \u2014 free to slide and tilt, but unable to fly. Before any rocket can attempt a real landing, it must prove it can stay balanced.
+  title: 'Classic CartPole',
+  story: `A cart sits on a frictionless track with a pole balanced upright on top. The only control: push the cart left or push it right.
 
-The task: keep upright for 500 steps. Every moment balanced earns a point. Topple, and it's back to step one.
+The task: keep the pole balanced for 500 steps. Every moment balanced earns a point. Let it tip too far, and it's back to step one.
 
-This is the classic CartPole problem \u2014 the "Hello World" of reinforcement learning. A simple cart on a track with a pole balanced on top. Push left or push right. That's it. But mastering balance is the foundation for everything that follows.`,
+This is the classic CartPole problem \u2014 the "Hello World" of reinforcement learning. Simple to describe, surprisingly hard to master. But mastering balance is the foundation for everything that follows.`,
 
   objective: `Keep the pole balanced for 500 steps by pushing the cart left or right. The episode ends if the pole tilts beyond \u00B112\u00B0, the cart drifts beyond \u00B12.4 units, or 500 steps are reached (solved!). Every step balanced earns +1 reward.`,
 
@@ -13,17 +13,17 @@ This is the classic CartPole problem \u2014 the "Hello World" of reinforcement l
     'Why Q-tables need discretization for continuous states',
     'How policy gradient methods (REINFORCE) learn directly',
     'The classic CartPole benchmark that launched a thousand papers',
-    'The foundation skills Dabak needs before attempting a real landing',
+    'How simple balancing connects to harder problems like rocket landing',
   ],
 
-  howItWorks: `Dabak's state on the test stand is described by 4 numbers: horizontal position (x), velocity (v), tilt angle (\u03B8), and angular velocity (\u03C9). At each timestep, Dabak can push left or push right \u2014 just two actions. If the tilt exceeds \u00B112\u00B0 or the cart drifts beyond \u00B12.4 units, the pole topples and the episode ends. Survive 500 steps and the episode is solved!`,
+  howItWorks: `The cart's state is described by 4 numbers: horizontal position (x), velocity (v), tilt angle (\u03B8), and angular velocity (\u03C9). At each timestep, the agent can push left or push right \u2014 just two actions. If the tilt exceeds \u00B112\u00B0 or the cart drifts beyond \u00B12.4 units, the pole topples and the episode ends. Survive 500 steps and the episode is solved!`,
 }
 
 export const classicCartpoleAlgorithms = {
   random: {
     name: 'Random Baseline',
     description:
-      'No learning at all \u2014 Dabak pushes randomly left or right. This establishes a baseline: pure luck typically topples in ~20-40 steps.',
+      'No learning at all \u2014 the agent pushes randomly left or right. This establishes a baseline: pure luck typically topples in ~20-40 steps.',
     sections: [
       {
         title: 'How It Works',
@@ -40,7 +40,7 @@ export const classicCartpoleAlgorithms = {
   'discretized-q': {
     name: 'Discretized Q-Learning',
     description:
-      'The same Q-Learning from GridWorld, adapted for continuous states by binning the 4 state variables into discrete buckets. Dabak learns a Q-table over these bins.',
+      'The same Q-Learning from GridWorld, adapted for continuous states by binning the 4 state variables into discrete buckets. The agent learns a Q-table over these bins.',
     sections: [
       {
         title: 'The Discretization Trick',
@@ -68,7 +68,7 @@ export const classicCartpoleAlgorithms = {
       {
         title: 'Policy Gradient Intuition',
         content:
-          'Imagine Dabak has a "preference" for left or right in each state. After each episode, if the episode lasted long (good!), increase the probability of the actions taken. If it toppled quickly (bad!), decrease them. Over time, good balancing patterns emerge.',
+          'Imagine the agent has a "preference" for left or right in each state. After each episode, if the episode lasted long (good!), increase the probability of the actions taken. If it toppled quickly (bad!), decrease them. Over time, good balancing patterns emerge.',
         equation: '\\theta \\leftarrow \\theta + \\alpha \\sum_t (G_t - b) \\nabla_\\theta \\log \\pi_\\theta(a_t | s_t)',
       },
       {
@@ -88,8 +88,10 @@ export const classicCartpoleAlgorithms = {
 
 export const classicCartpoleParamExplanations: Record<string, string> = {
   alpha: 'Learning rate \u2014 how much Q-values shift after each step. Try 0.1 to start.',
-  gamma: 'Discount factor \u2014 how much Dabak values future balance vs. the current moment. High \u03B3 (0.99) = plan ahead.',
-  epsilon: 'Exploration rate \u2014 how often Dabak pushes randomly instead of using its best estimate. Needed for discovery but hurts performance.',
+  gamma: 'Discount factor \u2014 how much the agent values future balance vs. the current moment. High \u03B3 (0.99) = plan ahead.',
+  epsilon: 'Exploration rate \u2014 how often the agent pushes randomly instead of using its best estimate. Needed for discovery but hurts performance.',
   bins: 'Number of bins per state dimension (4 dimensions). More bins = finer control but more states. Fewer bins = faster but coarser.',
   lr: 'Policy learning rate \u2014 how quickly the policy weights update. Too high = unstable. Too low = slow. Try 0.01.',
+  epsilonDecay: 'After each episode, \u03B5 is multiplied by this factor. At 0.995, \u03B5 halves roughly every 140 episodes. Set to 1.0 to disable decay.',
+  epsilonMin: 'The floor for \u03B5 \u2014 exploration never drops below this. Prevents the agent from becoming fully greedy.',
 }

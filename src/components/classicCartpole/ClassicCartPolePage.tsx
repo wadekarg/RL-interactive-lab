@@ -23,6 +23,8 @@ export function ClassicCartPolePage() {
   const [epsilon, setEpsilon] = useState(0.1)
   const [lr, setLr] = useState(0.01)
   const [bins, setBins] = useState(6)
+  const [epsilonDecay, setEpsilonDecay] = useState(0.995)
+  const [epsilonMin, setEpsilonMin] = useState(0.01)
   const [showIntro, setShowIntro] = useState(true)
   const [maxSteps, setMaxSteps] = useState(100000)
   const [envSeed, setEnvSeed] = useState(0)
@@ -51,11 +53,11 @@ export function ClassicCartPolePage() {
       case 'random':
         return new RandomAgent()
       case 'discretized-q':
-        return new DiscretizedQLearningAgent(alpha, gamma, epsilon, discretizationConfig)
+        return new DiscretizedQLearningAgent(alpha, gamma, epsilon, discretizationConfig, epsilonDecay, epsilonMin)
       case 'reinforce':
         return new ReinforceAgent(lr, gamma)
     }
-  }, [algorithmType, alpha, gamma, epsilon, lr, discretizationConfig, envSeed]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [algorithmType, alpha, gamma, epsilon, lr, discretizationConfig, epsilonDecay, epsilonMin, envSeed]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const stateRef = useRef<ClassicCartPoleState>(environment.reset())
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -197,10 +199,10 @@ export function ClassicCartPolePage() {
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-3xl font-bold text-text">
-              <span className="text-2xl mr-2">{'\uD83D\uDE80'}</span> {classicCartpoleIntro.title}
+              <img src={`${import.meta.env.BASE_URL}cartpole.png`} alt="" className="inline-block w-10 h-10 mr-2 align-middle" /> {classicCartpoleIntro.title}
             </h1>
             <p className="text-base text-primary-light mt-1 font-medium">
-              Master balance on the test stand before the real landing
+              The classic RL benchmark {'\u2014'} keep the pole balanced
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -321,6 +323,28 @@ export function ClassicCartPolePage() {
                   className="w-full accent-primary disabled:opacity-40" />
                 <p className="text-xs text-text-muted mt-0.5">{classicCartpoleParamExplanations.bins}</p>
               </div>
+
+              <div>
+                <div className="flex justify-between text-sm mb-1">
+                  <label className="text-text">{'\u03B5'} Decay Rate</label>
+                  <span className="font-mono text-primary-light">{epsilonDecay}</span>
+                </div>
+                <input type="range" min={0.9} max={1.0} step={0.001} value={epsilonDecay}
+                  onChange={(e) => setEpsilonDecay(Number(e.target.value))} disabled={isRunning}
+                  className="w-full accent-primary disabled:opacity-40" />
+                <p className="text-xs text-text-muted mt-0.5">{classicCartpoleParamExplanations.epsilonDecay}</p>
+              </div>
+
+              <div>
+                <div className="flex justify-between text-sm mb-1">
+                  <label className="text-text">{'\u03B5'} Minimum</label>
+                  <span className="font-mono text-primary-light">{epsilonMin}</span>
+                </div>
+                <input type="range" min={0} max={0.2} step={0.01} value={epsilonMin}
+                  onChange={(e) => setEpsilonMin(Number(e.target.value))} disabled={isRunning}
+                  className="w-full accent-primary disabled:opacity-40" />
+                <p className="text-xs text-text-muted mt-0.5">{classicCartpoleParamExplanations.epsilonMin}</p>
+              </div>
             </>
           )}
 
@@ -374,7 +398,7 @@ export function ClassicCartPolePage() {
 
           <div className="p-4 bg-surface-light rounded-xl border border-surface-lighter">
             <h3 className="text-sm font-semibold text-text-muted uppercase tracking-wider mb-2">
-              Dabak's Progress
+              Training Progress
             </h3>
             <div className="flex flex-col gap-2 text-sm">
               <div className="flex justify-between">
@@ -407,6 +431,12 @@ export function ClassicCartPolePage() {
                   </div>
                 </>
               )}
+              {algorithmType === 'discretized-q' && agent instanceof DiscretizedQLearningAgent && (
+                <div className="flex justify-between">
+                  <span className="text-text-muted">Current {'\u03B5'}</span>
+                  <span className="font-mono text-accent-yellow">{agent.getCurrentEpsilon().toFixed(4)}</span>
+                </div>
+              )}
             </div>
           </div>
 
@@ -436,12 +466,12 @@ export function ClassicCartPolePage() {
             <h3 className="text-sm font-semibold text-text-muted uppercase tracking-wider mb-2">Legend</h3>
             <div className="flex flex-col gap-1.5 text-xs">
               <div className="flex items-center gap-2">
-                <span className="text-base">{'\uD83D\uDE80'}</span>
-                <span className="text-text">Dabak on the test stand</span>
+                <img src={`${import.meta.env.BASE_URL}cartpole.png`} alt="" className="inline-block w-6 h-6" />
+                <span className="text-text">Cart with pole</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="w-4 h-2 bg-yellow-500 rounded-sm inline-block" />
-                <span className="text-text">Test stand rail (x={'\u00B1'}2.4)</span>
+                <span className="text-text">Track (x={'\u00B1'}2.4)</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-base">{'\u2B05\uFE0F'}</span>
@@ -496,7 +526,7 @@ export function ClassicCartPolePage() {
           {/* Footer teaser */}
           <div className="bg-surface-light rounded-xl border border-surface-lighter p-4 text-center">
             <p className="text-sm text-text mb-2">
-              Dabak has mastered balance! Ready for the real challenge?
+              Mastered CartPole? Ready for a harder challenge?
             </p>
             <Link
               to="/rocket-landing"

@@ -14,6 +14,10 @@ export class DiscretizedQLearningAgent implements Agent<ClassicCartPoleState, Cl
   private alpha: number
   private gamma: number
   private epsilon: number
+  private epsilonDecay: number
+  private epsilonMin: number
+  private currentEpsilon: number
+  private episodeCount = 0
   private discretizationConfig: ClassicDiscretizationConfig
   private numActions = 2
 
@@ -22,10 +26,15 @@ export class DiscretizedQLearningAgent implements Agent<ClassicCartPoleState, Cl
     gamma = 0.99,
     epsilon = 0.1,
     discretizationConfig: ClassicDiscretizationConfig = DEFAULT_CLASSIC_DISCRETIZATION,
+    epsilonDecay = 0.995,
+    epsilonMin = 0.01,
   ) {
     this.alpha = alpha
     this.gamma = gamma
     this.epsilon = epsilon
+    this.epsilonDecay = epsilonDecay
+    this.epsilonMin = epsilonMin
+    this.currentEpsilon = epsilon
     this.discretizationConfig = discretizationConfig
   }
 
@@ -37,7 +46,7 @@ export class DiscretizedQLearningAgent implements Agent<ClassicCartPoleState, Cl
   }
 
   act(state: ClassicCartPoleState): ClassicCartPoleAction {
-    if (Math.random() < this.epsilon) {
+    if (Math.random() < this.currentEpsilon) {
       return randInt(this.numActions) as ClassicCartPoleAction
     }
     const key = discretizeClassic(state, this.discretizationConfig)
@@ -52,6 +61,14 @@ export class DiscretizedQLearningAgent implements Agent<ClassicCartPoleState, Cl
 
     const target = done ? reward : reward + this.gamma * Math.max(...nextQ)
     q[action] += this.alpha * (target - q[action])
+
+    if (done) {
+      this.episodeCount++
+      this.currentEpsilon = Math.max(
+        this.epsilonMin,
+        this.epsilon * Math.pow(this.epsilonDecay, this.episodeCount),
+      )
+    }
   }
 
   getValues(): Record<string, number[]> {
@@ -62,8 +79,14 @@ export class DiscretizedQLearningAgent implements Agent<ClassicCartPoleState, Cl
     return result
   }
 
+  getCurrentEpsilon(): number {
+    return this.currentEpsilon
+  }
+
   reset(): void {
     this.qTable.clear()
+    this.episodeCount = 0
+    this.currentEpsilon = this.epsilon
   }
 
   setParams(alpha: number, gamma: number, epsilon: number): void {

@@ -106,13 +106,16 @@ function StepBox({ steps }: { steps: { label: string; detail: string; type: 'exp
   )
 }
 
-function SimButton({ label, to, className }: { label?: string; to?: string; className?: string }) {
+function SimButton({ label, to, icon, className }: { label?: string; to?: string; icon?: string; className?: string }) {
   return (
     <Link
       to={to ?? '/cartpole'}
       className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium no-underline hover:bg-primary-dark transition-colors ${className ?? ''}`}
     >
-      <span>{'\uD83D\uDE80'}</span> {label ?? 'Try it in the Simulator'}
+      {icon
+        ? <span>{icon}</span>
+        : <img src={`${import.meta.env.BASE_URL}cartpole.png`} alt="" className="inline-block w-6 h-6" />
+      } {label ?? 'Try it in the Simulator'}
     </Link>
   )
 }
@@ -134,8 +137,8 @@ export function ClassicCartPoleGuidePage() {
           Classic CartPole &amp; Balance Control
         </h1>
         <p className="text-lg text-text-muted max-w-2xl mx-auto">
-          Dabak's first challenge: stay balanced on the test stand. Learn the fundamentals of
-          continuous control before attempting a real landing.
+          Master the classic CartPole benchmark. Learn the fundamentals of continuous
+          control with a simple cart-and-pole balancing problem.
         </p>
         <div className="flex justify-center gap-3 mt-4 text-xs text-text-muted">
           <span className="bg-surface-light px-3 py-1 rounded-full">8 sections</span>
@@ -186,11 +189,11 @@ export function ClassicCartPoleGuidePage() {
         </Accordion>
 
         {/* ── SECTION 2 ── */}
-        <Accordion number={2} title="Meet Dabak: Training on the Test Stand">
+        <Accordion number={2} title="The CartPole Setup">
           <p className="text-sm text-text leading-relaxed mb-4">
-            Dabak is training on a test stand — a cart-and-pole balancing rig. A pole is hinged on top of a cart
-            that slides left and right on a track. Dabak must keep the pole upright by pushing the cart. If the
-            pole tips too far or the cart rolls off the edge, Dabak has failed. The goal: survive as long as possible.
+            A pole is hinged on top of a cart that slides left and right on a frictionless track.
+            The agent's only control is to push the cart left or right. If the pole tips too far
+            or the cart rolls off the edge, the episode ends. The goal: keep the pole balanced for as long as possible.
           </p>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 my-5">
@@ -211,26 +214,35 @@ export function ClassicCartPoleGuidePage() {
             <strong>Rules:</strong>
           </p>
           <ul className="text-sm text-text-muted space-y-1 mb-4">
-            <li className="flex items-start gap-2"><span className="text-primary-light">-</span>Dabak gets +1 reward for every timestep it keeps the pole balanced</li>
-            <li className="flex items-start gap-2"><span className="text-primary-light">-</span>500 steps = solved — Dabak has mastered the test stand</li>
+            <li className="flex items-start gap-2"><span className="text-primary-light">-</span>The agent gets +1 reward for every timestep it keeps the pole balanced</li>
+            <li className="flex items-start gap-2"><span className="text-primary-light">-</span>500 steps = solved!</li>
             <li className="flex items-start gap-2"><span className="text-primary-light">-</span>|{'\u03B8'}| &gt; 12{'\u00B0'} = pole fell too far — episode over</li>
             <li className="flex items-start gap-2"><span className="text-primary-light">-</span>|x| &gt; 2.4 = cart left the track — episode over</li>
             <li className="flex items-start gap-2"><span className="text-primary-light">-</span>2 actions: push left or push right</li>
           </ul>
 
+          <Callout type="think" title="Termination vs Truncation">
+            There are two ways an episode can end {'\u2014'} and the distinction matters. When the pole falls or
+            the cart leaves the track, that's <strong>termination</strong> {'\u2014'} a real failure caused by the physics.
+            When the agent survives 500 steps, that's <strong>truncation</strong> {'\u2014'} an artificial time limit.
+            The difference matters for learning: at termination, there truly is no future value. At truncation,
+            the agent <em>could</em> have kept going {'\u2014'} so its value estimate should account for the future it
+            didn't get to see. Many RL bugs come from treating these the same.
+          </Callout>
+
           <Callout type="think">
             Notice the simple reward: +1 for every step alive. There is no bonus for "good" balance or
             penalty for wobbling. The only signal is survival. This makes the problem deceptively simple —
-            Dabak must figure out that keeping the pole centered <em>now</em> leads to staying alive <em>later</em>.
+            The agent must figure out that keeping the pole centered <em>now</em> leads to staying alive <em>later</em>.
           </Callout>
 
-          <SimButton label="See Dabak on the test stand" className="mt-2" />
+          <SimButton label="Try the CartPole simulator" className="mt-2" />
         </Accordion>
 
         {/* ── SECTION 3 ── */}
         <Accordion number={3} title="The State Space: Four Numbers">
           <p className="text-sm text-text leading-relaxed mb-4">
-            Dabak's entire situation at any moment is captured by just 4 numbers. Together, they tell you
+            The cart's entire situation at any moment is captured by just 4 numbers. Together, they tell you
             everything you need to know to decide whether to push left or right.
           </p>
 
@@ -319,7 +331,7 @@ export function ClassicCartPoleGuidePage() {
           <StepBox steps={[
             {
               label: 'Observe 4D state: x=0.37, v=-0.12, \u03B8=0.038, \u03C9=0.85',
-              detail: 'Dabak reads its sensors. Four real numbers describe its complete situation.',
+              detail: 'The agent reads the state. Four real numbers describe the complete situation.',
               type: 'neutral',
             },
             {
@@ -334,8 +346,8 @@ export function ClassicCartPoleGuidePage() {
             },
             {
               label: 'Execute action, observe reward and next state',
-              detail: 'Dabak pushes the cart left or right, physics advances one timestep, and we get the new 4D state + reward (+1).',
-              type: 'exploit',
+              detail: 'The agent pushes the cart left or right, physics advances one timestep, and we get the new 4D state + reward (+1).',
+              type: 'neutral',
             },
             {
               label: 'Update Q-table at bin(s) using standard Q-Learning',
@@ -433,14 +445,15 @@ export function ClassicCartPoleGuidePage() {
           </div>
 
           <Callout type="think">
-            The quadratic features ({'\u03B8'}{'\u00B2'}, {'\u03C9'}{'\u00B2'}) are important. They let the policy
-            distinguish "tilted left" from "tilted right" even though the magnitude is the same, and capture
-            nonlinear relationships like "push harder when the pole is falling fast."
+            The quadratic features ({'\u03B8'}{'\u00B2'}, {'\u03C9'}{'\u00B2'}) let the policy respond nonlinearly
+            to state variables. For example, the policy can learn to push harder when the pole is far
+            from vertical in <em>either</em> direction {'\u2014'} a U-shaped response that linear features alone cannot capture.
+            The linear {'\u03B8'} feature already distinguishes left from right tilt; the squared term adds magnitude sensitivity.
           </Callout>
 
           <StepBox steps={[
             {
-              label: 'Play a full episode (Dabak balances until pole falls or 500 steps)',
+              label: 'Play a full episode (balance until pole falls or 500 steps)',
               detail: 'Record every (state, action, reward) triple in a trajectory buffer.',
               type: 'explore',
             },
@@ -460,6 +473,16 @@ export function ClassicCartPoleGuidePage() {
               type: 'exploit',
             },
           ]} />
+
+          <Callout type="insight" title="The Credit Assignment Problem">
+            REINFORCE uses the return G<sub>t</sub> to weight each action's gradient. But consider: if the agent
+            pushed right at step 3 and the episode lasted 200 steps, step 3's action gets credit for
+            all 197 future rewards {'\u2014'} even rewards that had nothing to do with that push. Early actions
+            get credit for things they didn't cause, and late actions get too little credit for their
+            immediate impact. This noise is why REINFORCE has high variance. Actor-Critic methods address
+            this by using a per-step TD error instead of the full return {'\u2014'} giving each action credit
+            only for the <em>difference</em> between what happened and what was expected.
+          </Callout>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 my-4">
             <div className="bg-accent-green/10 border border-accent-green/30 rounded-lg p-3">
@@ -486,15 +509,14 @@ export function ClassicCartPoleGuidePage() {
         {/* ── SECTION 8 ── */}
         <Accordion number={8} title="Next Step: Rocket Landing">
           <p className="text-sm text-text leading-relaxed mb-5">
-            Dabak has learned to balance on the test stand — keeping a pole upright with only 4 state variables
+            CartPole is solved — keeping a pole upright with only 4 state variables
             and 2 actions. But balance is just the beginning. The real challenge awaits: a full rocket landing
             with gravity, altitude, descent rate, and tilt control.
           </p>
 
           <p className="text-sm text-text leading-relaxed mb-5">
-            Once Dabak masters balance, it graduates to real descent under gravity. The rocket landing problem
-            expands to 6 dimensions and 3 actions — a significant jump in complexity that tests whether
-            the strategies learned here can scale.
+            The rocket landing problem expands to 6 dimensions and 3 actions — a significant jump
+            in complexity that tests whether the strategies learned here can scale.
           </p>
 
           <div className="flex flex-col gap-4">
@@ -504,7 +526,7 @@ export function ClassicCartPoleGuidePage() {
               <p className="text-sm text-text-muted leading-relaxed mb-2">
                 CartPole has position, velocity, angle, and angular velocity. The rocket adds altitude (y) and
                 descent rate (vy). These two extra dimensions transform the problem from balance to controlled descent —
-                Dabak must manage altitude <em>and</em> orientation simultaneously.
+                the agent must manage altitude <em>and</em> orientation simultaneously.
               </p>
               <p className="text-xs text-primary-light">
                 4D: 10{'\u2074'} = 10,000 discretized states. 6D: 10{'\u2076'} = 1,000,000.
@@ -516,7 +538,7 @@ export function ClassicCartPoleGuidePage() {
               <h4 className="text-sm font-bold text-text mb-1">From 2 Actions to 3</h4>
               <p className="text-xs text-text-muted italic mb-2">"A third thruster fights gravity"</p>
               <p className="text-sm text-text-muted leading-relaxed mb-2">
-                In CartPole, Dabak only pushes left or right. The rocket adds a bottom thruster that fights
+                In CartPole, the agent only pushes left or right. The rocket adds a bottom thruster that fights
                 gravity — introducing a whole new dimension of strategy. When to thrust down? How to balance
                 horizontal correction against descent rate? The action space gets richer.
               </p>
@@ -527,7 +549,7 @@ export function ClassicCartPoleGuidePage() {
               <p className="text-xs text-text-muted italic mb-2">"The reward gets shaped"</p>
               <p className="text-sm text-text-muted leading-relaxed mb-2">
                 CartPole's reward is dead simple: +1 per step alive. The rocket introduces shaped rewards —
-                big bonuses for soft landings, penalties for crashes. Dabak must learn not just to survive,
+                big bonuses for soft landings, penalties for crashes. The agent must learn not just to survive,
                 but to achieve a specific goal: touch down gently, centered on the pad.
               </p>
             </div>
@@ -540,7 +562,7 @@ export function ClassicCartPoleGuidePage() {
           </Callout>
 
           <div className="mt-4 text-center">
-            <SimButton to="/rocket-landing" label="Try the Rocket Landing Challenge" />
+            <SimButton to="/rocket-landing" label="Try the Rocket Landing Challenge" icon={'\uD83D\uDE80'} />
           </div>
         </Accordion>
       </div>
@@ -548,9 +570,9 @@ export function ClassicCartPoleGuidePage() {
       {/* Footer */}
       <div className="mt-10 text-center">
         <p className="text-sm text-text-muted mb-3">
-          Dabak has mastered balance! Ready for the real challenge?
+          Mastered CartPole? Try a harder challenge.
         </p>
-        <SimButton to="/rocket-landing" label="Advance to Rocket Landing" />
+        <SimButton to="/rocket-landing" label="Advance to Rocket Landing" icon={'\uD83D\uDE80'} />
       </div>
     </div>
   )
