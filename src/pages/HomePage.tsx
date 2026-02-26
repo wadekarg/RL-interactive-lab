@@ -16,10 +16,10 @@ const labs = [
     tag: '4 algorithms + editor',
   },
   {
-    title: "Dabak's Training",
-    description: 'The classic CartPole challenge. Help Dabak, our rocket, stay balanced on a test stand — push left or right to keep upright for 500 steps. The foundation for everything that follows.',
+    title: 'Classic CartPole',
+    description: 'The classic RL benchmark. Push a cart left or right to keep a pole balanced for 500 steps. Discretized Q-Learning, REINFORCE, and random baseline.',
     path: '/cartpole',
-    icon: '\uD83D\uDE80',
+    icon: 'cartpole.png',
     tag: '3 algorithms',
   },
   {
@@ -50,6 +50,26 @@ export function HomePage() {
         </div>
       </div>
 
+      {/* Learn RL CTA */}
+      <Link
+        to="/learn"
+        className="group block p-6 bg-primary/10 rounded-xl border border-primary/30 no-underline transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 mb-8"
+      >
+        <div className="flex items-center gap-4">
+          <span className="text-4xl">{'\uD83D\uDCDA'}</span>
+          <div className="flex-1">
+            <h2 className="text-xl font-bold text-primary-light group-hover:text-primary transition-colors">
+              New to RL? Start Here
+            </h2>
+            <p className="text-sm text-text-muted mt-1">
+              A complete interactive course from first principles — states, actions, rewards, policies, Bellman equations, and more.
+              Learn the theory, then see it in action in the labs.
+            </p>
+          </div>
+          <span className="text-primary-light text-2xl">&rarr;</span>
+        </div>
+      </Link>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {labs.map((lab) => (
           <Link
@@ -58,7 +78,9 @@ export function HomePage() {
             className="group block p-6 bg-surface-light rounded-xl border border-surface-lighter no-underline transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10"
           >
             <div className="flex items-start gap-4">
-              <span className="text-4xl">{lab.icon}</span>
+              {lab.icon.endsWith('.png')
+                ? <img src={`${import.meta.env.BASE_URL}${lab.icon}`} alt="" className="w-12 h-12 object-contain flex-shrink-0" />
+                : <span className="text-4xl flex-shrink-0">{lab.icon}</span>}
               <div>
                 <h2 className="text-xl font-bold text-text group-hover:text-primary-light transition-colors">
                   {lab.title}

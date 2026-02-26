@@ -1,7 +1,6 @@
 import { useRef, useEffect, useCallback } from 'react'
 import type { ClassicCartPoleState, ClassicCartPoleAction, BalanceResult } from '../../environments/classicCartpole'
 import { useThemeStore } from '../../store/themeStore'
-import { PALETTES, drawRocket, ROCKET_H, ROCKET_W, NOSE_H, NOZZLE_H } from '../shared/rocketDrawing'
 
 interface TestStandCanvasProps {
   state: ClassicCartPoleState
@@ -18,38 +17,120 @@ const CANVAS_W = 640
 const CANVAS_H = 420
 const GROUND_Y = CANVAS_H * 0.82
 
-// Test stand dimensions
-const STAND_W = 200
-const STAND_H = 8
-const BEAM_W = 6
-const BEAM_H = 50
-const CRADLE_Y = GROUND_Y - BEAM_H - STAND_H / 2
-const RAIL_Y = CRADLE_Y
+// Track dimensions
+const TRACK_H = 8
+const SUPPORT_W = 6
+const SUPPORT_H = 50
+const RAIL_Y = GROUND_Y - SUPPORT_H - TRACK_H / 2
+
+// Track extent matches x ∈ [-2.4, 2.4]
+const TRACK_LEFT = CANVAS_W / 2 - CANVAS_W * 0.38
+const TRACK_RIGHT = CANVAS_W / 2 + CANVAS_W * 0.38
+const TRACK_W = TRACK_RIGHT - TRACK_LEFT
+
+// Cart dimensions
+const CART_W = 60
+const CART_H = 28
+const WHEEL_R = 7
+
+// Pole dimensions
+const POLE_LEN = 120
+const POLE_TIP_R = 6
+const POLE_W = 4
 
 function mapX(x: number): number {
   return CANVAS_W / 2 + (x / 2.4) * (CANVAS_W * 0.38)
 }
 
-// ─── Star field (stable across redraws) ─────────────────────────────────────
+// ─── Theme-aware color palettes ─────────────────────────────────────────────
 
-function seededRandom(seed: number): () => number {
-  let s = seed
-  return () => {
-    s = (s * 16807 + 0) % 2147483647
-    return s / 2147483647
-  }
+interface CartPalette {
+  skyTop: string
+  skyBottom: string
+  groundLight: string
+  ground: string
+  trackColor: string
+  trackStroke: string
+  supportColor: string
+  supportStripe: string
+  cartBody: string
+  cartStroke: string
+  wheelColor: string
+  wheelStroke: string
+  poleColor: string
+  poleTip: string
+  forceLeft: string
+  forceRight: string
+  overlay: string
+  textMuted: string
+  hudText: string
 }
 
-const STAR_COUNT = 80
-const STAR_DATA: { x: number; y: number; size: number; brightness: number }[] = (() => {
-  const rng = seededRandom(42)
-  return Array.from({ length: STAR_COUNT }, () => ({
-    x: rng(),
-    y: rng() * 0.62,
-    size: 0.4 + rng() * 1.8,
-    brightness: 0.2 + rng() * 0.8,
-  }))
-})()
+const CART_PALETTES: Record<string, CartPalette> = {
+  dark: {
+    skyTop: '#0f172a',
+    skyBottom: '#1e293b',
+    groundLight: '#334155',
+    ground: '#1e293b',
+    trackColor: '#eab308',
+    trackStroke: '#a16207',
+    supportColor: '#64748b',
+    supportStripe: '#eab308',
+    cartBody: '#94a3b8',
+    cartStroke: '#64748b',
+    wheelColor: '#475569',
+    wheelStroke: '#334155',
+    poleColor: '#3b82f6',
+    poleTip: '#60a5fa',
+    forceLeft: '#ef4444',
+    forceRight: '#3b82f6',
+    overlay: 'rgba(0,0,0,0.55)',
+    textMuted: 'rgba(148,163,184,0.9)',
+    hudText: 'rgba(148,163,184,0.9)',
+  },
+  light: {
+    skyTop: '#bfdbfe',
+    skyBottom: '#dbeafe',
+    groundLight: '#86efac',
+    ground: '#4ade80',
+    trackColor: '#ca8a04',
+    trackStroke: '#92400e',
+    supportColor: '#9ca3af',
+    supportStripe: '#ca8a04',
+    cartBody: '#6b7280',
+    cartStroke: '#4b5563',
+    wheelColor: '#374151',
+    wheelStroke: '#1f2937',
+    poleColor: '#2563eb',
+    poleTip: '#3b82f6',
+    forceLeft: '#dc2626',
+    forceRight: '#2563eb',
+    overlay: 'rgba(255,255,255,0.55)',
+    textMuted: 'rgba(75,85,99,0.9)',
+    hudText: 'rgba(75,85,99,0.9)',
+  },
+  warm: {
+    skyTop: '#1c1917',
+    skyBottom: '#292524',
+    groundLight: '#44403c',
+    ground: '#292524',
+    trackColor: '#d97706',
+    trackStroke: '#92400e',
+    supportColor: '#78716c',
+    supportStripe: '#d97706',
+    cartBody: '#a8a29e',
+    cartStroke: '#78716c',
+    wheelColor: '#57534e',
+    wheelStroke: '#44403c',
+    poleColor: '#f59e0b',
+    poleTip: '#fbbf24',
+    forceLeft: '#ef4444',
+    forceRight: '#f59e0b',
+    overlay: 'rgba(0,0,0,0.55)',
+    textMuted: 'rgba(168,162,158,0.9)',
+    hudText: 'rgba(168,162,158,0.9)',
+  },
+}
 
 // ─── COMPONENT ──────────────────────────────────────────────────────────────
 
@@ -65,7 +146,7 @@ export function TestStandCanvas({ state, action, done, balanceResult, episode, s
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    const pal = PALETTES[theme]
+    const pal = CART_PALETTES[theme] ?? CART_PALETTES.dark
     const w = CANVAS_W
     const h = CANVAS_H
     canvas.width = w
@@ -74,21 +155,12 @@ export function TestStandCanvas({ state, action, done, balanceResult, episode, s
     frameRef.current++
     const frame = frameRef.current
 
-    // ── Sky gradient ──
+    // ── Sky gradient (light, no stars) ──
     const skyGrad = ctx.createLinearGradient(0, 0, 0, GROUND_Y)
     skyGrad.addColorStop(0, pal.skyTop)
     skyGrad.addColorStop(1, pal.skyBottom)
     ctx.fillStyle = skyGrad
     ctx.fillRect(0, 0, w, GROUND_Y)
-
-    // ── Stars ──
-    for (const star of STAR_DATA) {
-      const twinkle = 0.5 + 0.5 * Math.sin(frame * 0.03 + star.x * 100)
-      ctx.beginPath()
-      ctx.arc(star.x * w, star.y * h, star.size, 0, Math.PI * 2)
-      ctx.fillStyle = pal.stars.replace(/[\d.]+\)$/, `${star.brightness * twinkle})`)
-      ctx.fill()
-    }
 
     // ── Ground ──
     const groundGrad = ctx.createLinearGradient(0, GROUND_Y, 0, h)
@@ -97,130 +169,194 @@ export function TestStandCanvas({ state, action, done, balanceResult, episode, s
     ctx.fillStyle = groundGrad
     ctx.fillRect(0, GROUND_Y, w, h - GROUND_Y)
 
-    // ── Test Stand ──
-    const standCenterX = w / 2
+    // ── Track supports ──
+    ctx.fillStyle = pal.supportColor
+    ctx.fillRect(TRACK_LEFT - SUPPORT_W / 2, GROUND_Y - SUPPORT_H, SUPPORT_W, SUPPORT_H)
+    ctx.fillRect(TRACK_RIGHT - SUPPORT_W / 2, GROUND_Y - SUPPORT_H, SUPPORT_W, SUPPORT_H)
 
-    // Left support beam
-    ctx.fillStyle = pal.padTop
-    ctx.fillRect(standCenterX - STAND_W / 2 - BEAM_W / 2, GROUND_Y - BEAM_H, BEAM_W, BEAM_H)
+    // Hazard stripes on supports
+    ctx.strokeStyle = pal.supportStripe
+    ctx.lineWidth = 2
+    for (let sy = GROUND_Y - SUPPORT_H; sy < GROUND_Y; sy += 10) {
+      ctx.beginPath()
+      ctx.moveTo(TRACK_LEFT - SUPPORT_W / 2, sy)
+      ctx.lineTo(TRACK_LEFT + SUPPORT_W / 2, sy + 5)
+      ctx.stroke()
+      ctx.beginPath()
+      ctx.moveTo(TRACK_RIGHT - SUPPORT_W / 2, sy)
+      ctx.lineTo(TRACK_RIGHT + SUPPORT_W / 2, sy + 5)
+      ctx.stroke()
+    }
 
-    // Right support beam
-    ctx.fillRect(standCenterX + STAND_W / 2 - BEAM_W / 2, GROUND_Y - BEAM_H, BEAM_W, BEAM_H)
-
-    // Crossbar / rail
-    ctx.fillStyle = pal.padStripe
-    ctx.fillRect(standCenterX - STAND_W / 2, RAIL_Y - STAND_H / 2, STAND_W, STAND_H)
+    // ── Track / rail ──
+    ctx.fillStyle = pal.trackColor
+    ctx.fillRect(TRACK_LEFT, RAIL_Y - TRACK_H / 2, TRACK_W, TRACK_H)
 
     // Rail tick marks
-    ctx.strokeStyle = pal.padTop
+    ctx.strokeStyle = pal.trackStroke
     ctx.lineWidth = 1
-    for (let tx = -STAND_W / 2; tx <= STAND_W / 2; tx += 20) {
+    for (let tx = TRACK_LEFT; tx <= TRACK_RIGHT; tx += 20) {
       ctx.beginPath()
-      ctx.moveTo(standCenterX + tx, RAIL_Y - STAND_H / 2)
-      ctx.lineTo(standCenterX + tx, RAIL_Y + STAND_H / 2)
+      ctx.moveTo(tx, RAIL_Y - TRACK_H / 2)
+      ctx.lineTo(tx, RAIL_Y + TRACK_H / 2)
       ctx.stroke()
     }
 
-    // Hazard stripes on beams
-    ctx.strokeStyle = pal.padStripe
-    ctx.lineWidth = 2
-    for (let sy = GROUND_Y - BEAM_H; sy < GROUND_Y; sy += 10) {
-      // Left beam
+    // ── Cart position ──
+    const cartCx = mapX(state.x)
+    const cartBottom = RAIL_Y - TRACK_H / 2
+    const cartTop = cartBottom - CART_H
+    const cartLeft = cartCx - CART_W / 2
+
+    // Wheel positions
+    const wheelY = cartBottom
+    const wheelLx = cartCx - CART_W / 3
+    const wheelRx = cartCx + CART_W / 3
+
+    // Pole hinge at top center of cart
+    const hingeX = cartCx
+    const hingeY = cartTop
+    const tipX = hingeX + POLE_LEN * Math.sin(state.theta)
+    const tipY = hingeY - POLE_LEN * Math.cos(state.theta)
+
+    if (!done || balanceResult === 'solved') {
+      // ── Cart body ──
+      ctx.fillStyle = pal.cartBody
+      ctx.strokeStyle = pal.cartStroke
+      ctx.lineWidth = 2
       ctx.beginPath()
-      ctx.moveTo(standCenterX - STAND_W / 2 - BEAM_W / 2, sy)
-      ctx.lineTo(standCenterX - STAND_W / 2 + BEAM_W / 2, sy + 5)
+      ctx.roundRect(cartLeft, cartTop, CART_W, CART_H, 4)
+      ctx.fill()
       ctx.stroke()
-      // Right beam
+
+      // ── Wheels ──
+      ctx.fillStyle = pal.wheelColor
+      ctx.strokeStyle = pal.wheelStroke
+      ctx.lineWidth = 1.5
       ctx.beginPath()
-      ctx.moveTo(standCenterX + STAND_W / 2 - BEAM_W / 2, sy)
-      ctx.lineTo(standCenterX + STAND_W / 2 + BEAM_W / 2, sy + 5)
+      ctx.arc(wheelLx, wheelY, WHEEL_R, 0, Math.PI * 2)
+      ctx.fill()
       ctx.stroke()
-    }
+      ctx.beginPath()
+      ctx.arc(wheelRx, wheelY, WHEEL_R, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.stroke()
 
-    // ── Rocket (at ground level, slides horizontally) ──
-    const rocketCx = mapX(state.x)
-    const rocketBaseY = RAIL_Y - STAND_H / 2 - NOZZLE_H - 4
+      // ── Pole ──
+      ctx.strokeStyle = pal.poleColor
+      ctx.lineWidth = POLE_W
+      ctx.lineCap = 'round'
+      ctx.beginPath()
+      ctx.moveTo(hingeX, hingeY)
+      ctx.lineTo(tipX, tipY)
+      ctx.stroke()
 
-    ctx.save()
-    ctx.translate(rocketCx, rocketBaseY)
-    ctx.rotate(state.theta)
+      // Pole tip (ball)
+      ctx.fillStyle = pal.poleTip
+      ctx.beginPath()
+      ctx.arc(tipX, tipY, POLE_TIP_R, 0, Math.PI * 2)
+      ctx.fill()
 
-    if (!done) {
-      drawRocket(ctx, pal)
+      // Hinge circle
+      ctx.fillStyle = pal.cartStroke
+      ctx.beginPath()
+      ctx.arc(hingeX, hingeY, 4, 0, Math.PI * 2)
+      ctx.fill()
 
-      // ── Flame effect (only left/right, no bottom) ──
-      if (action !== null) {
-        const flameDir = action === 1 ? 1 : -1
-        const flickerScale = 0.7 + Math.random() * 0.6
-        const flameLen = 28 * flickerScale
-        const flameW = 10 * flickerScale
+      // ── Force arrow (when actively pushing) ──
+      if (action !== null && !done) {
+        const arrowDir = action === 1 ? 1 : -1
+        const arrowY = RAIL_Y + TRACK_H / 2 + 18
+        const arrowStartX = cartCx - arrowDir * 5
+        const arrowEndX = cartCx + arrowDir * 30
+        const arrowColor = action === 1 ? pal.forceRight : pal.forceLeft
 
-        // Outer glow
-        ctx.fillStyle = pal.flameOuter
-        ctx.globalAlpha = 0.5
+        ctx.strokeStyle = arrowColor
+        ctx.lineWidth = 3
+        ctx.lineCap = 'round'
         ctx.beginPath()
-        ctx.moveTo(-flameW * 0.7, NOZZLE_H)
-        ctx.quadraticCurveTo(flameDir * 6, NOZZLE_H + flameLen * 0.5, flameDir * 2, NOZZLE_H + flameLen)
-        ctx.quadraticCurveTo(-flameDir * 3, NOZZLE_H + flameLen * 0.6, flameW * 0.7, NOZZLE_H)
+        ctx.moveTo(arrowStartX, arrowY)
+        ctx.lineTo(arrowEndX, arrowY)
+        ctx.stroke()
+
+        // Arrowhead
+        ctx.fillStyle = arrowColor
+        ctx.beginPath()
+        ctx.moveTo(arrowEndX, arrowY)
+        ctx.lineTo(arrowEndX - arrowDir * 8, arrowY - 5)
+        ctx.lineTo(arrowEndX - arrowDir * 8, arrowY + 5)
         ctx.closePath()
         ctx.fill()
 
-        // Mid flame
-        ctx.fillStyle = pal.flameMid
-        ctx.globalAlpha = 0.75
-        const midLen = flameLen * 0.7
-        ctx.beginPath()
-        ctx.moveTo(-flameW * 0.45, NOZZLE_H)
-        ctx.quadraticCurveTo(flameDir * 3, NOZZLE_H + midLen * 0.5, flameDir * 1, NOZZLE_H + midLen)
-        ctx.quadraticCurveTo(-flameDir * 2, NOZZLE_H + midLen * 0.5, flameW * 0.45, NOZZLE_H)
-        ctx.closePath()
-        ctx.fill()
-
-        // Inner core
-        ctx.fillStyle = pal.flameCore
-        ctx.globalAlpha = 0.95
-        const coreLen = flameLen * 0.4
-        ctx.beginPath()
-        ctx.moveTo(-flameW * 0.2, NOZZLE_H)
-        ctx.quadraticCurveTo(flameDir * 1, NOZZLE_H + coreLen * 0.5, 0, NOZZLE_H + coreLen)
-        ctx.quadraticCurveTo(-flameDir * 1, NOZZLE_H + coreLen * 0.5, flameW * 0.2, NOZZLE_H)
-        ctx.closePath()
-        ctx.fill()
-
-        ctx.globalAlpha = 1
+        // Label
+        ctx.font = '10px system-ui'
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'top'
+        ctx.fillStyle = arrowColor
+        ctx.fillText(action === 1 ? 'Push \u2192' : '\u2190 Push', cartCx + arrowDir * 12, arrowY + 8)
       }
-    } else if (balanceResult === 'solved') {
-      drawRocket(ctx, pal)
 
-      // Green glow for solved
-      const glowPulse = 0.3 + 0.2 * Math.sin(frame * 0.1)
-      ctx.shadowColor = '#22c55e'
-      ctx.shadowBlur = 35
-      ctx.strokeStyle = `rgba(34, 197, 94, ${glowPulse})`
-      ctx.lineWidth = 4
-      ctx.beginPath()
-      ctx.roundRect(-ROCKET_W / 2 - 8, -ROCKET_H - NOSE_H - 6, ROCKET_W + 16, ROCKET_H + NOSE_H + NOZZLE_H + 16, 10)
-      ctx.stroke()
-      ctx.shadowBlur = 0
+      // ── Solved glow ──
+      if (balanceResult === 'solved') {
+        const glowPulse = 0.3 + 0.2 * Math.sin(frame * 0.1)
+        ctx.shadowColor = '#22c55e'
+        ctx.shadowBlur = 35
+        ctx.strokeStyle = `rgba(34, 197, 94, ${glowPulse})`
+        ctx.lineWidth = 4
+        ctx.beginPath()
+        ctx.roundRect(cartLeft - 10, cartTop - POLE_LEN - POLE_TIP_R - 10, CART_W + 20, CART_H + POLE_LEN + POLE_TIP_R + 20, 10)
+        ctx.stroke()
+        ctx.shadowBlur = 0
+      }
     } else {
-      // ── Fell — topple particles ──
-      const numParticles = 12
-      for (let i = 0; i < numParticles; i++) {
-        const angle = (i / numParticles) * Math.PI * 2 + frame * 0.02
-        const dist = 14 + Math.sin(frame * 0.15 + i * 1.7) * 8
-        const px = Math.cos(angle) * dist
-        const py = Math.sin(angle) * dist - ROCKET_H / 2
-        const size = 2 + Math.random() * 4
-        ctx.fillStyle = i % 3 === 0 ? pal.flameCore : i % 3 === 1 ? pal.flameMid : '#777'
-        ctx.globalAlpha = 0.4 + Math.random() * 0.5
-        ctx.beginPath()
-        ctx.arc(px, py, size, 0, Math.PI * 2)
-        ctx.fill()
-      }
-      ctx.globalAlpha = 1
-    }
+      // ── Fell state — cart + pole at final angle, dimmed with red pole ──
+      ctx.globalAlpha = 0.6
 
-    ctx.restore()
+      // Cart body (dimmed)
+      ctx.fillStyle = pal.cartBody
+      ctx.strokeStyle = pal.cartStroke
+      ctx.lineWidth = 2
+      ctx.beginPath()
+      ctx.roundRect(cartLeft, cartTop, CART_W, CART_H, 4)
+      ctx.fill()
+      ctx.stroke()
+
+      // Wheels (dimmed)
+      ctx.fillStyle = pal.wheelColor
+      ctx.strokeStyle = pal.wheelStroke
+      ctx.lineWidth = 1.5
+      ctx.beginPath()
+      ctx.arc(wheelLx, wheelY, WHEEL_R, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.stroke()
+      ctx.beginPath()
+      ctx.arc(wheelRx, wheelY, WHEEL_R, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.stroke()
+
+      ctx.globalAlpha = 1
+
+      // Pole in red (fallen angle)
+      ctx.strokeStyle = '#ef4444'
+      ctx.lineWidth = POLE_W
+      ctx.lineCap = 'round'
+      ctx.beginPath()
+      ctx.moveTo(hingeX, hingeY)
+      ctx.lineTo(tipX, tipY)
+      ctx.stroke()
+
+      // Pole tip in red
+      ctx.fillStyle = '#ef4444'
+      ctx.beginPath()
+      ctx.arc(tipX, tipY, POLE_TIP_R, 0, Math.PI * 2)
+      ctx.fill()
+
+      // Hinge
+      ctx.fillStyle = pal.cartStroke
+      ctx.beginPath()
+      ctx.arc(hingeX, hingeY, 4, 0, Math.PI * 2)
+      ctx.fill()
+    }
 
     // ── Status overlays ──
     if (done && balanceResult === 'fell') {
@@ -245,14 +381,14 @@ export function TestStandCanvas({ state, action, done, balanceResult, episode, s
       ctx.fillText('BALANCED!', w / 2, h * 0.38)
       ctx.font = '16px system-ui'
       ctx.fillStyle = pal.textMuted
-      ctx.fillText(`500 steps \u2014 ready for real landing!`, w / 2, h * 0.38 + 40)
+      ctx.fillText(`500 steps \u2014 perfectly balanced!`, w / 2, h * 0.38 + 40)
     }
 
     // ── State overlay (top-left) ──
     ctx.font = '12px monospace'
     ctx.textAlign = 'left'
     ctx.textBaseline = 'top'
-    ctx.fillStyle = pal.stars.replace(/[\d.]+\)$/, '0.9)')
+    ctx.fillStyle = pal.hudText
     const stateLines = [
       `Ep ${episode}  Step ${stepInEpisode}`,
       `x: ${state.x.toFixed(2)}   v: ${state.xDot.toFixed(2)}`,

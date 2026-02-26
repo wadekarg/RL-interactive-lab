@@ -364,7 +364,7 @@ export function generateClassicTDNarrative(bd: ClassicTDBreakdown): string {
       ? `TD error is negative (${fmt(bd.tdError)}) \u2014 outcome was worse than expected, so Q-value decreases.`
       : `TD error is near zero \u2014 prediction matched reality, minimal update.`
 
-  return `Dabak pushed ${bd.actionName} (${moveType}). Bin [${bd.discretizedKey}] \u2192 [${bd.nextDiscretizedKey}]. ${outcome} ${tdInterpretation}`
+  return `The agent pushed ${bd.actionName} (${moveType}). Bin [${bd.discretizedKey}] \u2192 [${bd.nextDiscretizedKey}]. ${outcome} ${tdInterpretation}`
 }
 
 export function generateClassicReinforceNarrative(bd: ClassicReinforceBreakdown): string {
@@ -385,15 +385,15 @@ export function generateClassicReinforceNarrative(bd: ClassicReinforceBreakdown)
         ? ` Return > baseline (${fmt(bd.baseline)}) \u2014 actions in this episode get reinforced.`
         : ` Return < baseline (${fmt(bd.baseline)}) \u2014 actions in this episode get discouraged.`
       : ''
-    return `Dabak pushed ${bd.actionName} (${probStr}). ${resultText} ${durText}${baselineNote} Weights updated using the full trajectory.`
+    return `The agent pushed ${bd.actionName} (${probStr}). ${resultText} ${durText}${baselineNote} Weights updated using the full trajectory.`
   }
 
-  return `Dabak pushed ${bd.actionName} (${probStr}). Balancing (\u03B8=${(bd.nextState.theta * 180 / Math.PI).toFixed(1)}\u00B0). Step ${bd.stepInEpisode + 1} of episode ${bd.episode}. ${policyNote} No weight update until episode ends.`
+  return `The agent pushed ${bd.actionName} (${probStr}). Balancing (\u03B8=${(bd.nextState.theta * 180 / Math.PI).toFixed(1)}\u00B0). Step ${bd.stepInEpisode + 1} of episode ${bd.episode}. ${policyNote} No weight update until episode ends.`
 }
 
 export function generateClassicRandomNarrative(bd: ClassicRandomBreakdown): string {
   if (bd.done) {
-    return `Dabak pushed ${bd.actionName} (random, 50/50). Episode ended after ${bd.stepInEpisode + 1} steps. No learning \u2014 this is the baseline to beat.`
+    return `The agent pushed ${bd.actionName} (random, 50/50). Episode ended after ${bd.stepInEpisode + 1} steps. No learning \u2014 this is the baseline to beat.`
   }
-  return `Dabak pushed ${bd.actionName} (random, 50/50). Step ${bd.stepInEpisode + 1} of episode ${bd.episode}. Each action has equal probability \u2014 no state information used.`
+  return `The agent pushed ${bd.actionName} (random, 50/50). Step ${bd.stepInEpisode + 1} of episode ${bd.episode}. Each action has equal probability \u2014 no state information used.`
 }

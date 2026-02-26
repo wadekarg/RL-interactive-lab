@@ -4,6 +4,7 @@ import type { Theme } from '../../store/themeStore'
 
 const navItems = [
   { path: '/', label: 'Home' },
+  { path: '/learn', label: 'Learn RL' },
   { path: '/bandit', label: 'Multi-Armed Bandit' },
   { path: '/gridworld', label: 'GridWorld' },
   { path: '/cartpole', label: 'Cart-Pole' },
@@ -33,7 +34,9 @@ export function Navbar() {
           <div className="flex items-center gap-2">
             <div className="flex gap-1">
               {navItems.map(({ path, label }) => {
-                const isActive = location.pathname === path
+                const isActive = path === '/learn'
+                  ? location.pathname.startsWith('/learn')
+                  : location.pathname === path
                 return (
                   <Link
                     key={path}
