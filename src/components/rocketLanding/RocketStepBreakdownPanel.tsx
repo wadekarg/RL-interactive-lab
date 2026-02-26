@@ -1,20 +1,20 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import katex from 'katex'
 import { useSimulationStore } from '../../store/simulationStore'
-import type { DiscretizationConfig } from '../../environments/cartpole'
-import { CARTPOLE_ACTION_NAMES } from '../../environments/cartpole'
+import type { RocketDiscretizationConfig } from '../../environments/rocketLanding'
+import { ROCKET_ACTION_NAMES, getLandingResult } from '../../environments/rocketLanding'
 import {
-  computeCartPoleTDBreakdown,
-  computeCartPoleReinforceBreakdown,
-  computeCartPoleRandomBreakdown,
-  generateCartPoleTDFormula,
-  generateCartPoleReinforceFormula,
-  generateCartPoleTDNarrative,
-  generateCartPoleReinforceNarrative,
-  generateCartPoleRandomNarrative,
+  computeRocketTDBreakdown,
+  computeRocketReinforceBreakdown,
+  computeRocketRandomBreakdown,
+  generateRocketTDFormula,
+  generateRocketReinforceFormula,
+  generateRocketTDNarrative,
+  generateRocketReinforceNarrative,
+  generateRocketRandomNarrative,
   fmt,
-} from '../../utils/cartpoleStepBreakdown'
-import type { CartPoleTDBreakdown, CartPoleReinforceBreakdown, CartPoleRandomBreakdown } from '../../utils/cartpoleStepBreakdown'
+} from '../../utils/rocketLandingStepBreakdown'
+import type { RocketTDBreakdown, RocketReinforceBreakdown, RocketRandomBreakdown } from '../../utils/rocketLandingStepBreakdown'
 
 // ─── KaTeX renderer ──────────────────────────────────────────────────────────
 
@@ -35,16 +35,16 @@ function RenderedEquation({ tex }: { tex: string }) {
 
 // ─── Props ───────────────────────────────────────────────────────────────────
 
-interface CartPoleStepBreakdownPanelProps {
+interface RocketStepBreakdownPanelProps {
   algorithmType: 'random' | 'discretized-q' | 'reinforce'
   alpha: number
   gamma: number
-  discretizationConfig: DiscretizationConfig
+  discretizationConfig: RocketDiscretizationConfig
 }
 
 // ─── Main Component ──────────────────────────────────────────────────────────
 
-export function CartPoleStepBreakdownPanel({ algorithmType, alpha, gamma, discretizationConfig }: CartPoleStepBreakdownPanelProps) {
+export function RocketStepBreakdownPanel({ algorithmType, alpha, gamma, discretizationConfig }: RocketStepBreakdownPanelProps) {
   const { history, selectedStepIndex, setSelectedStepIndex } = useSimulationStore()
   const [collapsed, setCollapsed] = useState(false)
 
@@ -61,12 +61,12 @@ export function CartPoleStepBreakdownPanel({ algorithmType, alpha, gamma, discre
   const breakdown = useMemo(() => {
     if (history.length === 0 || effectiveIndex < 0) return null
     if (algorithmType === 'discretized-q') {
-      return computeCartPoleTDBreakdown(history, effectiveIndex, alpha, gamma, discretizationConfig)
+      return computeRocketTDBreakdown(history, effectiveIndex, alpha, gamma, discretizationConfig)
     }
     if (algorithmType === 'reinforce') {
-      return computeCartPoleReinforceBreakdown(history, effectiveIndex)
+      return computeRocketReinforceBreakdown(history, effectiveIndex)
     }
-    return computeCartPoleRandomBreakdown(history, effectiveIndex)
+    return computeRocketRandomBreakdown(history, effectiveIndex)
   }, [history, effectiveIndex, algorithmType, alpha, gamma, discretizationConfig])
 
   const goTo = useCallback((idx: number) => {
@@ -106,13 +106,17 @@ export function CartPoleStepBreakdownPanel({ algorithmType, alpha, gamma, discre
 
   return (
     <div className="bg-surface-light rounded-xl border border-surface-lighter overflow-hidden">
-      {/* Header with inline navigation */}
       <div className="flex items-center justify-between px-4 py-3">
         <button
           onClick={() => setCollapsed(!collapsed)}
           className="flex items-center gap-2 bg-transparent border-0 cursor-pointer p-0 text-left"
         >
           <span className="text-sm font-semibold text-text">Step Breakdown</span>
+          <span className="text-xs text-text-muted ml-2">
+            {algorithmType === 'discretized-q' ? 'Q-Learning update details'
+              : algorithmType === 'reinforce' ? 'Policy gradient details'
+              : 'Random action details'}
+          </span>
         </button>
 
         <div className="flex items-center gap-2">
@@ -175,9 +179,9 @@ export function CartPoleStepBreakdownPanel({ algorithmType, alpha, gamma, discre
             />
           </div>
 
-          {breakdown && breakdown.type === 'cartpole-td' && <TDView bd={breakdown} />}
-          {breakdown && breakdown.type === 'cartpole-reinforce' && <ReinforceView bd={breakdown} />}
-          {breakdown && breakdown.type === 'cartpole-random' && <RandomView bd={breakdown} />}
+          {breakdown && breakdown.type === 'rocket-td' && <TDView bd={breakdown} />}
+          {breakdown && breakdown.type === 'rocket-reinforce' && <ReinforceView bd={breakdown} />}
+          {breakdown && breakdown.type === 'rocket-random' && <RandomView bd={breakdown} />}
         </div>
       )}
     </div>
@@ -186,9 +190,9 @@ export function CartPoleStepBreakdownPanel({ algorithmType, alpha, gamma, discre
 
 // ─── TD (Discretized Q-Learning) View ───────────────────────────────────────
 
-function TDView({ bd }: { bd: CartPoleTDBreakdown }) {
-  const formula = useMemo(() => generateCartPoleTDFormula(bd), [bd])
-  const narrative = useMemo(() => generateCartPoleTDNarrative(bd), [bd])
+function TDView({ bd }: { bd: RocketTDBreakdown }) {
+  const formula = useMemo(() => generateRocketTDFormula(bd), [bd])
+  const narrative = useMemo(() => generateRocketTDNarrative(bd), [bd])
 
   return (
     <div className="flex flex-col gap-4">
@@ -200,12 +204,15 @@ function TDView({ bd }: { bd: CartPoleTDBreakdown }) {
         <h4 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2">
           Q-Learning Update
         </h4>
+        <p className="text-xs text-text-muted mb-2">
+          The agent compares what actually happened (Target) to what it predicted (Q-value).
+          The difference (TD error {'\u03B4'}) drives the update: positive {'\u03B4'} means the outcome was better than expected.
+        </p>
         <div className="bg-surface rounded-lg p-3 overflow-x-auto">
           <RenderedEquation tex={formula} />
         </div>
       </div>
 
-      {/* Q-value table for this discretized state */}
       <div>
         <h4 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2">
           Q-values at bin [{bd.discretizedKey}] — Before / After
@@ -221,7 +228,7 @@ function TDView({ bd }: { bd: CartPoleTDBreakdown }) {
               </tr>
             </thead>
             <tbody>
-              {([0, 1] as const).map((a) => {
+              {([0, 1, 2] as const).map((a) => {
                 const isUpdated = a === bd.action
                 const delta = bd.postQValues[a] - bd.preQValues[a]
                 return (
@@ -230,7 +237,7 @@ function TDView({ bd }: { bd: CartPoleTDBreakdown }) {
                     className={`border-b border-surface-lighter last:border-0 ${isUpdated ? 'bg-primary/10' : ''}`}
                   >
                     <td className="py-1.5 px-2 text-text">
-                      {CARTPOLE_ACTION_NAMES[a]}
+                      {ROCKET_ACTION_NAMES[a]}
                       {isUpdated && <span className="ml-1.5 text-xs text-primary-light font-medium">(updated)</span>}
                     </td>
                     <td className="py-1.5 px-2 text-right font-mono text-text-muted">{fmt(bd.preQValues[a])}</td>
@@ -246,6 +253,10 @@ function TDView({ bd }: { bd: CartPoleTDBreakdown }) {
             </tbody>
           </table>
         </div>
+        <p className="text-xs text-text-muted mt-2">
+          Only the taken action ({bd.actionName}) is updated. The greedy action (highest Q) is{' '}
+          <span className="font-medium text-text">{bd.greedyActionName}</span>.
+        </p>
       </div>
     </div>
   )
@@ -253,9 +264,9 @@ function TDView({ bd }: { bd: CartPoleTDBreakdown }) {
 
 // ─── REINFORCE View ─────────────────────────────────────────────────────────
 
-function ReinforceView({ bd }: { bd: CartPoleReinforceBreakdown }) {
-  const formula = useMemo(() => generateCartPoleReinforceFormula(), [])
-  const narrative = useMemo(() => generateCartPoleReinforceNarrative(bd), [bd])
+function ReinforceView({ bd }: { bd: RocketReinforceBreakdown }) {
+  const formula = useMemo(() => generateRocketReinforceFormula(), [])
+  const narrative = useMemo(() => generateRocketReinforceNarrative(bd), [bd])
 
   return (
     <div className="flex flex-col gap-4">
@@ -263,31 +274,97 @@ function ReinforceView({ bd }: { bd: CartPoleReinforceBreakdown }) {
         <p className="text-sm text-text leading-relaxed">{narrative}</p>
       </div>
 
-      {bd.done && bd.episodeDuration !== null && (
-        <div className="bg-surface rounded-lg p-3">
-          <h4 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2">
-            Episode Summary
-          </h4>
-          <div className="flex gap-4 text-sm">
-            <div>
-              <span className="text-text-muted">Duration: </span>
-              <span className="font-mono text-text">{bd.episodeDuration} steps</span>
-            </div>
-            <div>
-              <span className="text-text-muted">Return: </span>
-              <span className="font-mono text-text">{bd.episodeReturn}</span>
-            </div>
-          </div>
-          <p className="text-xs text-text-muted mt-2">
-            Weights updated using the full episode trajectory. Good actions reinforced, bad actions discouraged.
-          </p>
+      {/* Policy probabilities */}
+      <div>
+        <h4 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2">
+          Current Policy {'\u03C0'}(a|s)
+        </h4>
+        <p className="text-xs text-text-muted mb-2">
+          The probability the policy assigns to each action in this state.
+          Unlike Q-Learning, REINFORCE learns a policy directly — no Q-table needed.
+        </p>
+        <div className="flex gap-2">
+          {([0, 1, 2] as const).map((a) => {
+            const prob = bd.probabilities[a]
+            const isTaken = a === bd.action
+            return (
+              <div
+                key={a}
+                className={`flex-1 rounded-lg p-2 ${isTaken ? 'bg-primary/15 border border-primary/30' : 'bg-surface border border-surface-lighter'}`}
+              >
+                <div className="text-xs text-text-muted">{ROCKET_ACTION_NAMES[a]}</div>
+                <div className="text-lg font-mono font-bold text-text">{(prob * 100).toFixed(1)}%</div>
+                {isTaken && <div className="text-xs text-primary-light font-medium">chosen</div>}
+              </div>
+            )
+          })}
         </div>
-      )}
+      </div>
+
+      {/* Feature vector */}
+      <div>
+        <h4 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2">
+          Feature Vector {'\u03C6'}(s)
+        </h4>
+        <p className="text-xs text-text-muted mb-2">
+          The 6D state is encoded into 11 features. The policy uses W{'\u00B7'}{'\u03C6'}(s) to compute logits, then softmax to get probabilities.
+        </p>
+        <div className="flex flex-wrap gap-1.5">
+          {bd.features.map((val, i) => (
+            <div key={i} className="bg-surface rounded px-2 py-1 text-xs">
+              <span className="text-text-muted">{bd.featureLabels[i]}: </span>
+              <span className="font-mono text-text">{fmt(val)}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {bd.done && bd.episodeDuration !== null && (() => {
+        const result = getLandingResult(bd.nextState, bd.done)
+        return (
+          <div className="bg-surface rounded-lg p-3">
+            <h4 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2">
+              Episode Summary — Weights Updated
+            </h4>
+            <div className="flex gap-4 text-sm flex-wrap">
+              <div>
+                <span className="text-text-muted">Duration: </span>
+                <span className="font-mono text-text">{bd.episodeDuration} steps</span>
+              </div>
+              <div>
+                <span className="text-text-muted">Return (G): </span>
+                <span className="font-mono text-text">{bd.episodeReturn}</span>
+              </div>
+              <div>
+                <span className="text-text-muted">Baseline (b): </span>
+                <span className="font-mono text-text">{fmt(bd.baseline)}</span>
+              </div>
+              <div>
+                <span className="text-text-muted">Landing: </span>
+                <span className={`font-mono ${result === 'landed' ? 'text-accent-green' : 'text-accent-red'}`}>
+                  {result === 'landed' ? 'Soft' : 'Crash'}
+                </span>
+              </div>
+            </div>
+            <p className="text-xs text-text-muted mt-2">
+              {bd.episodeReturn !== null && bd.episodeReturn > bd.baseline
+                ? `Return (${bd.episodeReturn}) > baseline (${fmt(bd.baseline)}): actions taken this episode become more likely.`
+                : `Return (${bd.episodeReturn}) \u2264 baseline (${fmt(bd.baseline)}): actions taken this episode become less likely.`
+              }
+            </p>
+          </div>
+        )
+      })()}
 
       <div>
         <h4 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2">
           Policy Gradient Update Rule
         </h4>
+        <p className="text-xs text-text-muted mb-2">
+          REINFORCE waits until the episode ends, then updates weights for every step.
+          G_t is the discounted return from step t, and b is the running baseline.
+          When G_t {'>'} b, the taken action is reinforced; when G_t {'<'} b, it's discouraged.
+        </p>
         <div className="bg-surface rounded-lg p-3 overflow-x-auto">
           <RenderedEquation tex={formula} />
         </div>
@@ -298,8 +375,8 @@ function ReinforceView({ bd }: { bd: CartPoleReinforceBreakdown }) {
 
 // ─── Random View ────────────────────────────────────────────────────────────
 
-function RandomView({ bd }: { bd: CartPoleRandomBreakdown }) {
-  const narrative = useMemo(() => generateCartPoleRandomNarrative(bd), [bd])
+function RandomView({ bd }: { bd: RocketRandomBreakdown }) {
+  const narrative = useMemo(() => generateRocketRandomNarrative(bd), [bd])
 
   return (
     <div className="flex flex-col gap-4">
@@ -308,8 +385,8 @@ function RandomView({ bd }: { bd: CartPoleRandomBreakdown }) {
       </div>
       <div className="bg-surface rounded-lg p-3">
         <p className="text-xs text-text-muted">
-          Random agent — no learning, no Q-values, no policy. Actions are chosen with 50/50 probability.
-          This is the baseline that any learning algorithm should beat.
+          Random agent — no learning, no Q-values, no policy. Each action has ~33% probability.
+          This is the baseline: any learning algorithm should beat it. If it doesn't, the hyperparameters likely need tuning.
         </p>
       </div>
     </div>

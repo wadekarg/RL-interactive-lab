@@ -109,7 +109,7 @@ function StepBox({ steps }: { steps: { label: string; detail: string; type: 'exp
 function SimButton({ label, className }: { label?: string; className?: string }) {
   return (
     <Link
-      to="/cartpole"
+      to="/rocket-landing"
       className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium no-underline hover:bg-primary-dark transition-colors ${className ?? ''}`}
     >
       <span>{'\uD83D\uDE80'}</span> {label ?? 'Try it in the Simulator'}
@@ -121,21 +121,20 @@ function SimButton({ label, className }: { label?: string; className?: string })
    MAIN PAGE
    ══════════════════════════════════════════ */
 
-export function CartPoleGuidePage() {
+export function RocketLandingGuidePage() {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
       {/* Header */}
       <div className="mb-10 text-center">
-        <Link to="/cartpole" className="text-sm text-primary-light hover:underline no-underline mb-4 inline-block">
+        <Link to="/rocket-landing" className="text-sm text-primary-light hover:underline no-underline mb-4 inline-block">
           &larr; Back to Simulator
         </Link>
         <h1 className="text-4xl font-bold text-text mb-3">
-          Cart-Pole &amp; Continuous Control
+          Rocket Landing &amp; Continuous Control
         </h1>
         <p className="text-lg text-text-muted max-w-2xl mx-auto">
-          From grids to real numbers. Follow Dabak as it learns to land
-          in a world where states are continuous — the bridge to modern deep RL.
+          Dabak has graduated from the test stand. Now comes the real test — descending from altitude under gravity and landing softly.
         </p>
         <div className="flex justify-center gap-3 mt-4 text-xs text-text-muted">
           <span className="bg-surface-light px-3 py-1 rounded-full">10 sections</span>
@@ -168,10 +167,10 @@ export function CartPoleGuidePage() {
               </p>
             </div>
             <div className="bg-accent-green/10 border border-accent-green/30 rounded-xl p-4">
-              <h4 className="text-sm font-bold text-accent-green mb-2">Cart-Pole (Continuous)</h4>
-              <p className="text-xs text-text-muted mb-2">4 real-valued state variables</p>
+              <h4 className="text-sm font-bold text-accent-green mb-2">Rocket Landing (Continuous)</h4>
+              <p className="text-xs text-text-muted mb-2">6 real-valued state variables</p>
               <p className="text-xs text-text leading-relaxed m-0">
-                Position = 1.37, velocity = -0.42, angle = 0.038 rad, angular velocity = 0.91. There are <em>infinite</em> possible states. No table can hold them all.
+                Position = 1.37, velocity = -0.42, altitude = 0.65, descent rate = -1.2, angle = 0.038 rad, angular velocity = 0.91. There are <em>infinite</em> possible states. No table can hold them all.
               </p>
             </div>
           </div>
@@ -186,29 +185,23 @@ export function CartPoleGuidePage() {
         {/* ── SECTION 2 ── */}
         <Accordion number={2} title="Meet Dabak: A Rocket Learning to Land">
           <p className="text-sm text-text leading-relaxed mb-4">
-            Dabak is a small rocket learning to land on a launchpad. It dreams of one day reaching Mars, but first it must
-            master the basics right here on Earth. The physics are simple: a pole (the rocket) is balanced on a cart (the landing pad). At each moment, Dabak can fire a left or right thruster.
+            Dabak is a small rocket learning to land on a launchpad. It starts at altitude y=1.0 and must descend through gravity,
+            using thrusters to control its approach. The goal: touch down softly, centered on the pad, with minimal tilt. A soft
+            landing earns a big reward bonus; a hard crash earns a penalty.
           </p>
 
-          <div className="bg-surface rounded-lg p-4 mb-4">
-            <p className="text-sm text-text leading-relaxed">
-              <strong>The mapping:</strong> Cart-pole is one of the most famous RL benchmark problems (OpenAI Gym
-              CartPole-v1). We're dressing it up as rocket landing because the physics are identical:
-              keep something upright by applying sideways force.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 my-5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 my-5">
             {[
-              { cart: 'Cart position', rocket: 'Rocket horizontal position', symbol: 'x' },
-              { cart: 'Cart velocity', rocket: 'Rocket drift speed', symbol: 'v' },
-              { cart: 'Pole angle', rocket: 'Rocket tilt', symbol: '\u03B8' },
-              { cart: 'Pole angular velocity', rocket: 'Rocket spin rate', symbol: '\u03C9' },
+              { rocket: 'Horizontal position', symbol: 'x' },
+              { rocket: 'Drift speed', symbol: 'v' },
+              { rocket: 'Altitude', symbol: 'y' },
+              { rocket: 'Descent rate', symbol: 'vy' },
+              { rocket: 'Tilt angle', symbol: '\u03B8' },
+              { rocket: 'Spin rate', symbol: '\u03C9' },
             ].map((m) => (
               <div key={m.symbol} className="bg-surface rounded-lg p-3 text-center">
                 <span className="text-lg font-bold text-primary-light">{m.symbol}</span>
                 <p className="text-xs font-semibold text-text mt-1 mb-0">{m.rocket}</p>
-                <p className="text-xs text-text-muted mt-1 mb-0">{m.cart}</p>
               </div>
             ))}
           </div>
@@ -217,33 +210,37 @@ export function CartPoleGuidePage() {
             <strong>Rules:</strong>
           </p>
           <ul className="text-sm text-text-muted space-y-1 mb-4">
-            <li className="flex items-start gap-2"><span className="text-primary-light">-</span>Dabak gets +1 reward for every timestep it stays balanced</li>
-            <li className="flex items-start gap-2"><span className="text-primary-light">-</span>Episode ends if tilt exceeds {'\u00B1'}12{'\u00B0'} or position exceeds {'\u00B1'}2.4 units</li>
-            <li className="flex items-start gap-2"><span className="text-primary-light">-</span>Surviving 500 steps = perfect landing (maximum score)</li>
-            <li className="flex items-start gap-2"><span className="text-primary-light">-</span>Only 2 actions: left thrust or right thrust</li>
+            <li className="flex items-start gap-2"><span className="text-primary-light">-</span>Dabak gets +1 reward for every timestep it stays airborne</li>
+            <li className="flex items-start gap-2"><span className="text-primary-light">-</span>Episode ends when altitude reaches 0 (landing/crash) or airborne violation</li>
+            <li className="flex items-start gap-2"><span className="text-primary-light">-</span>Soft landing (|vy| &lt; 0.5, |{'\u03B8'}| &lt; 12{'\u00B0'}, |x| &lt; 1.0): up to +20 bonus</li>
+            <li className="flex items-start gap-2"><span className="text-primary-light">-</span>Hard crash: -10 penalty. Airborne violation: -5 penalty</li>
+            <li className="flex items-start gap-2"><span className="text-primary-light">-</span>3 actions: left thrust, right thrust, or bottom thrust (fights gravity)</li>
           </ul>
 
           <Callout type="think">
-            Notice: the reward is just +1 per step. There's no "goal state" like GridWorld's water hole.
-            The challenge is purely about <em>survival</em>. Episode duration IS the metric — longer is better.
+            Notice the shaped reward: unlike the old +1-per-step-only design, landing softly gives a big bonus
+            while crashing gives a penalty. This guides the agent toward the goal — not just survival,
+            but a <em>controlled descent and soft touchdown</em>.
           </Callout>
 
           <SimButton label="See Dabak in the simulator" className="mt-2" />
         </Accordion>
 
         {/* ── SECTION 3 ── */}
-        <Accordion number={3} title="The State Space: Four Numbers That Describe Everything">
+        <Accordion number={3} title="The State Space: Six Numbers That Describe Everything">
           <p className="text-sm text-text leading-relaxed mb-4">
-            Dabak's entire situation at any moment is captured by just 4 numbers. Together, they tell you
+            Dabak's entire situation at any moment is captured by 6 numbers. Together, they tell you
             everything you need to know to decide what action to take.
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
             {[
-              { symbol: 'x', name: 'Position', range: '[-2.4, 2.4]', desc: 'How far left or right of center. Outside this range = crash.', color: 'text-accent-blue' },
+              { symbol: 'x', name: 'Position', range: '[-2.4, 2.4]', desc: 'How far left or right of center. Outside this range while airborne = crash.', color: 'text-accent-blue' },
               { symbol: 'v', name: 'Velocity', range: '(-\u221E, +\u221E)', desc: 'How fast Dabak is drifting. Positive = moving right.', color: 'text-accent-green' },
-              { symbol: '\u03B8', name: 'Tilt Angle', range: '[-12\u00B0, 12\u00B0]', desc: 'How tilted the rocket is. Outside \u00B112\u00B0 = crash.', color: 'text-accent-yellow' },
-              { symbol: '\u03C9', name: 'Angular Velocity', range: '(-\u221E, +\u221E)', desc: 'How fast the tilt is changing. The key to anticipating crashes.', color: 'text-accent-red' },
+              { symbol: 'y', name: 'Altitude', range: '[0, 1.0]', desc: 'Height above the landing pad. Starts at 1.0, reaches 0 on landing.', color: 'text-primary-light' },
+              { symbol: 'vy', name: 'Descent Rate', range: '(-\u221E, +\u221E)', desc: 'How fast Dabak is falling. Negative = descending. Key for soft landing.', color: 'text-accent-yellow' },
+              { symbol: '\u03B8', name: 'Tilt Angle', range: '[-12\u00B0, 12\u00B0]', desc: 'How tilted the rocket is. Outside \u00B112\u00B0 while airborne = crash.', color: 'text-accent-red' },
+              { symbol: '\u03C9', name: 'Angular Velocity', range: '(-\u221E, +\u221E)', desc: 'How fast the tilt is changing. The key to anticipating crashes.', color: 'text-text-muted' },
             ].map((v) => (
               <div key={v.symbol} className="bg-surface rounded-xl p-4 border border-surface-lighter">
                 <div className="flex items-center gap-2 mb-2">
@@ -257,9 +254,9 @@ export function CartPoleGuidePage() {
           </div>
 
           <Callout type="insight">
-            The Markov property still holds: these 4 numbers are <em>everything</em> you need. You don't need
+            The Markov property still holds: these 6 numbers are <em>everything</em> you need. You don't need
             to know what happened 5 steps ago — the current state fully determines what's possible next.
-            This is why Cart-Pole is still an MDP, just like GridWorld — but with continuous states.
+            This is why the rocket landing problem is still an MDP, just like GridWorld — but with continuous states.
           </Callout>
 
           <p className="text-sm text-text leading-relaxed">
@@ -273,22 +270,22 @@ export function CartPoleGuidePage() {
         <Accordion number={4} title="Why Boru's Q-Table Won't Work Here">
           <p className="text-sm text-text leading-relaxed mb-4">
             In GridWorld, Q-Learning stored one row per state in its table. With 36 states and 4 actions,
-            that's 144 numbers — trivial. But Cart-Pole has infinite states.
+            that's 144 numbers — trivial. But the rocket landing problem has infinite states across 6 dimensions.
           </p>
 
           <div className="bg-surface rounded-lg p-4 mb-4">
             <p className="text-sm text-text leading-relaxed">
-              <strong>The Curse of Dimensionality:</strong> Even if you tried to discretize each of the 4
-              variables into just 100 bins, you'd get 100{'\u2074'} = 100,000,000 states. With 2 actions,
-              that's 200 million Q-values. Most would never be visited, so they'd never be learned.
+              <strong>The Curse of Dimensionality:</strong> Even if you tried to discretize each of the 6
+              variables into just 10 bins, you'd get 10{'\u2076'} = 1,000,000 states. With 3 actions,
+              that's 3 million Q-values. With 100 bins each: 100{'\u2076'} × 3 = 3 trillion. Most would never be visited.
             </p>
           </div>
 
           <div className="bg-surface rounded-lg p-4 my-3 text-xs font-mono text-text-muted leading-relaxed">
             <p className="mb-1">GridWorld: 36 states × 4 actions = <strong className="text-text">144 Q-values</strong></p>
-            <p className="mb-1">Cart-Pole (10 bins each): 10{'\u2074'} × 2 = <strong className="text-text">20,000 Q-values</strong></p>
-            <p className="mb-1">Cart-Pole (100 bins each): 100{'\u2074'} × 2 = <strong className="text-text">200,000,000 Q-values</strong></p>
-            <p className="mb-0">Cart-Pole (exact): {'\u221E'} × 2 = <strong className="text-accent-red">impossible</strong></p>
+            <p className="mb-1">Rocket (10 bins each): 10{'\u2076'} × 3 = <strong className="text-text">3,000,000 Q-values</strong></p>
+            <p className="mb-1">Rocket (100 bins each): 100{'\u2076'} × 3 = <strong className="text-text">3,000,000,000,000 Q-values</strong></p>
+            <p className="mb-0">Rocket (exact): {'\u221E'} × 3 = <strong className="text-accent-red">impossible</strong></p>
           </div>
 
           <Callout type="think">
@@ -317,13 +314,13 @@ export function CartPoleGuidePage() {
           <Eq tex="\text{bin}(x) = \left\lfloor \frac{x - x_{\min}}{x_{\max} - x_{\min}} \times N_{\text{bins}} \right\rfloor" />
 
           <p className="text-sm text-text leading-relaxed mb-4">
-            With 6 bins for x, 6 for velocity, 12 for angle, and 12 for angular velocity, we get:
+            With 6 bins for x and v, 8 bins for y and vy, and 12 bins for angle and angular velocity, we get:
           </p>
-          <Eq tex="6 \times 6 \times 12 \times 12 = 5{,}184 \text{ discrete states}" />
+          <Eq tex="6 \times 6 \times 8 \times 8 \times 12 \times 12 = 331{,}776 \text{ discrete states}" />
 
           <p className="text-sm text-text leading-relaxed mb-4">
-            That's manageable! With 2 actions, that's about 10,000 Q-values — comparable to a medium GridWorld.
-            Now we can use plain Q-Learning on this discretized state.
+            That's much larger than 4D, but still tractable. With 3 actions, that's about 1 million Q-values.
+            The 6D curse of dimensionality is real — each added dimension multiplies the state count.
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 my-4">
@@ -332,7 +329,7 @@ export function CartPoleGuidePage() {
               <ul className="text-xs text-text-muted m-0 pl-4">
                 <li>Simple — just add one line of code (the binning function)</li>
                 <li>Can reuse everything from tabular Q-Learning</li>
-                <li>Works well for low-dimensional problems (4-6 variables)</li>
+                <li>Works for low-dimensional problems (4-6 variables)</li>
               </ul>
             </div>
             <div className="bg-accent-red/10 border border-accent-red/30 rounded-lg p-3">
@@ -346,7 +343,7 @@ export function CartPoleGuidePage() {
           </div>
 
           <Callout type="insight">
-            Discretization is a <em>hack</em>, not a solution. It works for Cart-Pole (4 dimensions) but fails
+            Discretization is a <em>hack</em>, not a solution. It works for the rocket (6 dimensions) but fails
             for Atari games (millions of pixels). The real solution is function approximation — neural networks
             that can generalize across continuous states. But discretization is a great bridge to understand
             before making that jump.
@@ -357,20 +354,20 @@ export function CartPoleGuidePage() {
         <Accordion number={6} title="Strategy 1: Discretized Q-Learning">
           <p className="text-sm text-text leading-relaxed mb-4">
             This is exactly Boru's Q-Learning from GridWorld, but with one extra step: before looking up
-            Q-values, convert the continuous state to a bin key.
+            Q-values, convert the continuous 6D state to a bin key.
           </p>
 
           <Eq tex="Q(\text{bin}(s), a) \leftarrow Q(\text{bin}(s),a) + \alpha \Big[ r + \gamma \max_{a'} Q(\text{bin}(s'),a') - Q(\text{bin}(s),a) \Big]" />
 
           <StepBox steps={[
             {
-              label: 'Observe continuous state: x=0.37, v=-0.12, \u03B8=0.021, \u03C9=0.85',
-              detail: 'Dabak reads its sensors. Four real numbers describe its complete situation.',
+              label: 'Observe 6D state: x=0.37, v=-0.12, y=0.65, vy=-1.2, \u03B8=0.021, \u03C9=0.85',
+              detail: 'Dabak reads its sensors. Six real numbers describe its complete situation.',
               type: 'neutral',
             },
             {
-              label: 'Discretize: bin(s) = [3, 2, 7, 8]',
-              detail: 'Each variable is mapped to its bin. Now we have a discrete key we can look up in the Q-table.',
+              label: 'Discretize: bin(s) = [3, 2, 5, 3, 7, 8]',
+              detail: 'Each of the 6 variables is mapped to its bin. Now we have a discrete key for the Q-table.',
               type: 'neutral',
             },
             {
@@ -379,21 +376,22 @@ export function CartPoleGuidePage() {
               type: 'explore',
             },
             {
-              label: 'Execute action, observe reward (+1) and next state',
-              detail: 'Dabak fires the thruster, physics advances one timestep, and we get the new state + reward.',
+              label: 'Execute action, observe reward and next state',
+              detail: 'Dabak fires the thruster, physics advances one timestep, and we get the new 6D state + reward.',
               type: 'exploit',
             },
             {
               label: 'Update Q-table at bin(s) using standard Q-Learning',
-              detail: 'The exact same update rule as GridWorld. The only difference is the state key came from binning.',
+              detail: 'The exact same update rule as GridWorld. The only difference is the state key came from 6D binning.',
               type: 'neutral',
             },
           ]} />
 
           <Callout type="try">
             In the simulator, try changing the bin count. With very few bins (3-4), the agent learns fast
-            but plateaus early — it can't distinguish critical angle differences. With many bins (12+), it
-            learns slowly because there are too many states to visit. The sweet spot is usually 6-10 bins.
+            but plateaus early — it can't distinguish critical state differences. With many bins (8+), it
+            learns slowly because there are too many states to visit. The sweet spot is usually 4-6 bins
+            for the 6D space.
           </Callout>
 
           <SimButton label="Try Discretized Q-Learning on the rocket" className="mt-2" />
@@ -451,9 +449,9 @@ export function CartPoleGuidePage() {
 
           <div className="bg-surface rounded-lg p-4 mb-4">
             <p className="text-sm text-text leading-relaxed">
-              <strong>The intuition:</strong> "Play a full episode. If the episode went well (long survival),
-              make the actions you took more likely. If it went poorly (quick crash), make them less likely.
-              Over many episodes, good action patterns will dominate."
+              <strong>The intuition:</strong> "Play a full episode. If the episode ended in a soft landing (great!),
+              make the actions you took more likely. If it crashed quickly (bad!), make them less likely.
+              Over many episodes, good descent patterns will dominate."
             </p>
           </div>
 
@@ -468,24 +466,24 @@ export function CartPoleGuidePage() {
 
           <h4 className="text-sm font-bold text-text mt-5 mb-2">Our Policy: Linear Softmax</h4>
           <p className="text-sm text-text leading-relaxed mb-2">
-            Instead of a neural network, we use a simple linear model. The state is converted to 7 features:
+            Instead of a neural network, we use a simple linear model. The 6D state is converted to 11 features:
           </p>
 
           <div className="bg-surface rounded-lg p-4 my-3 text-xs font-mono text-text-muted leading-relaxed">
-            <p className="mb-1">{'\u03C6'}(s) = [1, x/2.4, v/3.0, {'\u03B8'}/0.21, {'\u03C9'}/3.5, ({'\u03B8'}/0.21){'\u00B2'}, ({'\u03C9'}/3.5){'\u00B2'}]</p>
-            <p className="mb-1">        bias  position  velocity  angle  ang.vel  quadratic features</p>
-            <p className="mb-0">Then: {'\u03C0'}(a|s) = softmax(W {'\u00B7'} {'\u03C6'}(s)), where W is a 2×7 weight matrix</p>
+            <p className="mb-1">{'\u03C6'}(s) = [1, x/2.4, v/3.0, y/1.0, vy/5.0, {'\u03B8'}/0.21, {'\u03C9'}/3.5, ({'\u03B8'}/0.21){'\u00B2'}, ({'\u03C9'}/3.5){'\u00B2'}, (y/1.0){'\u00B2'}, (vy/5.0){'\u00B2'}]</p>
+            <p className="mb-1">        bias  position  velocity  altitude  vert.vel  angle  ang.vel  quadratic features</p>
+            <p className="mb-0">Then: {'\u03C0'}(a|s) = softmax(W {'\u00B7'} {'\u03C6'}(s)), where W is a 3×11 weight matrix</p>
           </div>
 
           <Callout type="think">
-            The quadratic features ({'\u03B8'}{'\u00B2'} and {'\u03C9'}{'\u00B2'}) are important. They let the policy
-            distinguish "tilted left" from "tilted right" even though the magnitude is the same. Without them,
-            the linear policy would struggle to learn that "tilt left → thrust right" and "tilt right → thrust left."
+            The quadratic features ({'\u03B8'}{'\u00B2'}, {'\u03C9'}{'\u00B2'}, y{'\u00B2'}, vy{'\u00B2'}) are important. They let the policy
+            distinguish "tilted left" from "tilted right" even though the magnitude is the same, and capture
+            nonlinear relationships like "fire bottom thrust harder when falling fast."
           </Callout>
 
           <StepBox steps={[
             {
-              label: 'Play a full episode (Dabak flies until crash or 500 steps)',
+              label: 'Play a full episode (Dabak descends until landing or crash)',
               detail: 'Record every (state, action, reward) triple in a trajectory buffer.',
               type: 'explore',
             },
@@ -531,7 +529,7 @@ export function CartPoleGuidePage() {
         {/* ── SECTION 9 ── */}
         <Accordion number={9} title="Head-to-Head: Comparing Approaches">
           <p className="text-sm text-text leading-relaxed mb-4">
-            Three algorithms, three philosophies. Here's how they compare on Cart-Pole:
+            Three algorithms, three philosophies. Here's how they compare on the rocket landing problem:
           </p>
 
           <div className="overflow-x-auto mb-5">
@@ -547,12 +545,12 @@ export function CartPoleGuidePage() {
               <tbody className="text-text-muted">
                 {[
                   ['Family', 'None (baseline)', 'Value-based', 'Policy gradient'],
-                  ['State handling', 'Ignores state', 'Discretization (bins)', 'Feature extraction'],
+                  ['State handling', 'Ignores state', 'Discretization (6D bins)', '11 features from 6D state'],
                   ['Learns?', 'No', 'Yes (Q-table)', 'Yes (policy weights)'],
                   ['Updates when?', 'Never', 'Every step', 'Every episode end'],
-                  ['Typical performance', '~20-30 steps', '~100-300 steps', '~200-500 steps'],
+                  ['Typical result', 'Crashes in ~20 steps', 'Improving durations, rare landings', 'Can achieve soft landings'],
                   ['Hyperparameters', 'None', '\u03B1, \u03B3, \u03B5, bins', 'lr, \u03B3'],
-                  ['Ceiling', '~50 (luck)', 'Limited by bin resolution', 'Can reach 500'],
+                  ['Ceiling', 'Always crashes', 'Limited by 6D bin resolution', 'Soft landings possible'],
                 ].map((row, i) => (
                   <tr key={i} className={i % 2 === 0 ? 'bg-surface/50' : ''}>
                     <td className="py-2 px-3 font-medium text-text text-xs">{row[0]}</td>
@@ -570,27 +568,27 @@ export function CartPoleGuidePage() {
             <div className="bg-surface rounded-lg p-3 border border-surface-lighter">
               <span className="text-xs font-bold text-text-muted">Random</span>
               <p className="text-xs text-text-muted mt-1 mb-0">
-                Flat line around 20-30 steps. Establishes the floor — anything worse means a bug.
+                Crashes quickly every time. Establishes the floor — anything worse means a bug.
               </p>
             </div>
             <div className="bg-surface rounded-lg p-3 border border-surface-lighter">
               <span className="text-xs font-bold text-accent-blue">Discretized Q-Learning</span>
               <p className="text-xs text-text-muted mt-1 mb-0">
-                Fast initial learning, then plateau. The plateau height depends on bin resolution.
+                Learns to survive longer over hundreds of episodes. May achieve occasional soft landings with good bin settings.
               </p>
             </div>
             <div className="bg-surface rounded-lg p-3 border border-surface-lighter">
               <span className="text-xs font-bold text-accent-green">REINFORCE</span>
               <p className="text-xs text-text-muted mt-1 mb-0">
-                Slower start (needs full episodes), but can eventually reach 500. More variable.
+                Slower start (needs full episodes), but can eventually achieve consistent soft landings.
               </p>
             </div>
           </div>
 
           <Callout type="try">
             Run each algorithm for 200+ episodes in the simulator. Compare the episode duration charts.
-            Notice how REINFORCE starts slow but has the highest ceiling, while Discretized Q-Learning
-            learns faster but hits a wall.
+            Look for green dots (soft landings) appearing as the agent improves. REINFORCE typically
+            starts slow but has the highest ceiling.
           </Callout>
 
           <SimButton label="Compare all three in the simulator" className="mt-2" />
@@ -608,7 +606,7 @@ export function CartPoleGuidePage() {
               <h4 className="text-sm font-bold text-text mb-1">DQN: Neural Network Q-Learning</h4>
               <p className="text-xs text-text-muted italic mb-2">"Replace the Q-table with a neural network"</p>
               <p className="text-sm text-text-muted leading-relaxed mb-2">
-                Discretized Q-Learning works for 4 dimensions but fails for images (millions of pixels).
+                Discretized Q-Learning works for 6 dimensions but fails for images (millions of pixels).
                 Deep Q-Networks (DQN) replace the table with a neural network that takes raw state as
                 input and outputs Q-values. This is what beat Atari games in 2015.
               </p>
@@ -631,11 +629,11 @@ export function CartPoleGuidePage() {
               <p className="text-xs text-text-muted italic mb-2">"From launchpad landings to Mars and beyond"</p>
               <p className="text-sm text-text-muted leading-relaxed mb-2">
                 SpaceX's Falcon 9, NASA's Mars landers — they all use similar state spaces: position, velocity,
-                orientation, angular rates — just in 3D instead of 2D. Once Dabak masters landing here on Earth,
-                the same algorithms can scale to interplanetary missions. Research groups have already trained RL
+                orientation, angular rates — just in 3D instead of 2D. Dabak's 6D state with gravity and thrust
+                is a simplified version of the same problem. Research groups have already trained RL
                 agents to land rockets in simulation using algorithms descended from what you've seen here.
               </p>
-              <p className="text-xs text-primary-light">Dabak's 4-dimensional state space × 2 actions → a real lander's 12-dimensional state × continuous thrust is a difference of degree, not kind.</p>
+              <p className="text-xs text-primary-light">Dabak's 6-dimensional state space × 3 actions → a real lander's 12-dimensional state × continuous thrust is a difference of degree, not kind.</p>
             </div>
 
             <div className="bg-surface rounded-xl p-4 border border-surface-lighter">
@@ -652,8 +650,8 @@ export function CartPoleGuidePage() {
           </div>
 
           <Callout type="insight">
-            Cart-Pole is not just a toy. It contains every concept you need to understand modern deep RL:
-            continuous states, function approximation, policy gradients, variance reduction, and the
+            The rocket landing problem is not just a toy. It contains every concept you need to understand modern deep RL:
+            continuous states, function approximation, policy gradients, variance reduction, shaped rewards, and the
             value-vs-policy tradeoff. Master it, and you have the vocabulary for everything that follows.
           </Callout>
 
@@ -668,7 +666,7 @@ export function CartPoleGuidePage() {
         <p className="text-sm text-text-muted mb-3">
           Now that you understand the theory, help Dabak master landing in real time.
         </p>
-        <SimButton label="Open the Cart-Pole Simulator" />
+        <SimButton label="Open the Rocket Landing Simulator" />
       </div>
     </div>
   )

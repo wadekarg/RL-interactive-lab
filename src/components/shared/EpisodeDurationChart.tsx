@@ -1,16 +1,28 @@
 import { useMemo } from 'react'
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine, ResponsiveContainer,
+  Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Scatter, ComposedChart, ReferenceLine,
 } from 'recharts'
 import { useThemeColors } from '../../hooks/useThemeColors'
 
 interface EpisodeDurationChartProps {
-  /** Array of episode durations (steps survived per episode) */
+  /** Array of episode durations (steps per episode) */
   durations: number[]
+  /** Whether each episode was a success (green dots) */
+  successEpisodes?: boolean[]
+  /** Label for success dots in the legend/tooltip */
+  successLabel?: string
+  /** Optional horizontal reference line (e.g. 500 for classic CartPole solved threshold) */
+  referenceLine?: number
   rollingWindow?: number
 }
 
-export function EpisodeDurationChart({ durations, rollingWindow = 20 }: EpisodeDurationChartProps) {
+export function EpisodeDurationChart({
+  durations,
+  successEpisodes,
+  successLabel = 'Success',
+  referenceLine,
+  rollingWindow = 20,
+}: EpisodeDurationChartProps) {
   const tc = useThemeColors()
 
   const data = useMemo(() => {
@@ -18,14 +30,16 @@ export function EpisodeDurationChart({ durations, rollingWindow = 20 }: EpisodeD
       const windowStart = Math.max(0, i - rollingWindow + 1)
       const windowSlice = durations.slice(windowStart, i + 1)
       const avg = windowSlice.reduce((s, v) => s + v, 0) / windowSlice.length
+      const isSuccess = successEpisodes && successEpisodes[i]
 
       return {
         episode: i + 1,
         duration: d,
         avg: Math.round(avg * 10) / 10,
+        success: isSuccess ? d : undefined,
       }
     })
-  }, [durations, rollingWindow])
+  }, [durations, successEpisodes, rollingWindow])
 
   if (data.length === 0) {
     return (
@@ -38,10 +52,10 @@ export function EpisodeDurationChart({ durations, rollingWindow = 20 }: EpisodeD
   return (
     <div className="bg-surface-light rounded-xl border border-surface-lighter p-4">
       <h3 className="text-sm font-semibold text-text-muted uppercase tracking-wider mb-3">
-        Episode Duration (Steps Survived)
+        Episode Duration
       </h3>
       <ResponsiveContainer width="100%" height={200}>
-        <LineChart data={data}>
+        <ComposedChart data={data}>
           <CartesianGrid strokeDasharray="3 3" stroke={tc.chartGrid} />
           <XAxis dataKey="episode" stroke={tc.chartAxis} fontSize={11} label={{ value: 'Episode', position: 'insideBottom', offset: -2, fontSize: 10, fill: tc.textMuted }} />
           <YAxis stroke={tc.chartAxis} fontSize={11} domain={[0, 'auto']} />
@@ -54,7 +68,14 @@ export function EpisodeDurationChart({ durations, rollingWindow = 20 }: EpisodeD
               color: tc.text,
             }}
           />
-          <ReferenceLine y={500} stroke="#22c55e" strokeDasharray="6 3" strokeWidth={1.5} label={{ value: '500 (success)', position: 'right', fontSize: 10, fill: '#22c55e' }} />
+          {referenceLine !== undefined && (
+            <ReferenceLine
+              y={referenceLine}
+              stroke="#22c55e"
+              strokeDasharray="6 3"
+              label={{ value: `${referenceLine}`, position: 'right', fontSize: 10, fill: '#22c55e' }}
+            />
+          )}
           <Line
             type="monotone"
             dataKey="avg"
@@ -71,7 +92,13 @@ export function EpisodeDurationChart({ durations, rollingWindow = 20 }: EpisodeD
             dot={false}
             name="Duration"
           />
-        </LineChart>
+          <Scatter
+            dataKey="success"
+            fill="#22c55e"
+            name={successLabel}
+            shape="circle"
+          />
+        </ComposedChart>
       </ResponsiveContainer>
     </div>
   )

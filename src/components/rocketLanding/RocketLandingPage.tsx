@@ -1,51 +1,54 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { CartPoleEnvironment } from '../../environments/cartpole'
-import type { CartPoleState, CartPoleAction, DiscretizationConfig } from '../../environments/cartpole'
-import { RandomAgent } from '../../algorithms/cartpole/randomAgent'
-import { DiscretizedQLearningAgent } from '../../algorithms/cartpole/discretizedQLearning'
-import { ReinforceAgent } from '../../algorithms/cartpole/reinforce'
+import { RocketLandingEnvironment, getLandingResult } from '../../environments/rocketLanding'
+import type { RocketState, RocketAction, RocketDiscretizationConfig, LandingResult } from '../../environments/rocketLanding'
+import { RandomAgent } from '../../algorithms/rocketLanding/randomAgent'
+import { DiscretizedQLearningAgent } from '../../algorithms/rocketLanding/discretizedQLearning'
+import { ReinforceAgent } from '../../algorithms/rocketLanding/reinforce'
 import { useSimulationStore } from '../../store/simulationStore'
 import { PlaybackControls } from '../shared/PlaybackControls'
 import { AlgorithmExplainer } from '../shared/AlgorithmExplainer'
 import { RocketCanvas } from './RocketCanvas'
-import { EpisodeDurationChart } from './EpisodeDurationChart'
-import { CartPoleStepBreakdownPanel } from './CartPoleStepBreakdownPanel'
-import { cartpoleAlgorithms, cartpoleIntro, cartpoleParamExplanations } from '../../content/cartpoleExplainer'
-import type { Agent, SimulationStep } from '../../algorithms/types'
+import { EpisodeDurationChart } from '../shared/EpisodeDurationChart'
+import { RocketStepBreakdownPanel } from './RocketStepBreakdownPanel'
+import { rocketLandingAlgorithms, rocketLandingIntro, rocketLandingParamExplanations } from '../../content/rocketLandingExplainer'
+import type { Agent } from '../../algorithms/types'
 
 type AlgorithmType = 'random' | 'discretized-q' | 'reinforce'
 
-export function CartPolePage() {
+export function RocketLandingPage() {
   const [algorithmType, setAlgorithmType] = useState<AlgorithmType>('discretized-q')
   const [alpha, setAlpha] = useState(0.1)
   const [gamma, setGamma] = useState(0.99)
   const [epsilon, setEpsilon] = useState(0.1)
   const [lr, setLr] = useState(0.01)
-  const [bins, setBins] = useState(8)
+  const [bins, setBins] = useState(5)
   const [showIntro, setShowIntro] = useState(true)
+  const [maxSteps, setMaxSteps] = useState(100000)
   const [envSeed, setEnvSeed] = useState(0)
 
-  const { status, speed, history, addStep, setStatus, reset: resetStore, currentStep } = useSimulationStore()
+  const { status, speed, stepsPerTick, history, addStep, setStatus, reset: resetStore, currentStep } = useSimulationStore()
   const isRunning = status === 'running' || status === 'paused'
 
-  // Episode tracking
   const [episodeDurations, setEpisodeDurations] = useState<number[]>([])
+  const [landingResults, setLandingResults] = useState<LandingResult[]>([])
   const episodeDurationsRef = useRef(episodeDurations)
   episodeDurationsRef.current = episodeDurations
 
-  const discretizationConfig = useMemo((): DiscretizationConfig => ({
+  const discretizationConfig = useMemo((): RocketDiscretizationConfig => ({
     xBins: bins,
     xDotBins: bins,
+    yBins: bins,
+    yDotBins: bins,
     thetaBins: bins * 2,
     thetaDotBins: bins * 2,
   }), [bins])
 
   const environment = useMemo(() => {
-    return new CartPoleEnvironment()
+    return new RocketLandingEnvironment()
   }, [envSeed]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const agent = useMemo((): Agent<CartPoleState, CartPoleAction> => {
+  const agent = useMemo((): Agent<RocketState, RocketAction> => {
     switch (algorithmType) {
       case 'random':
         return new RandomAgent()
@@ -56,52 +59,60 @@ export function CartPolePage() {
     }
   }, [algorithmType, alpha, gamma, epsilon, lr, discretizationConfig, envSeed]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Simulation loop (inline, matches GridWorldPage pattern)
-  const stateRef = useRef<CartPoleState>(environment.reset())
+  const stateRef = useRef<RocketState>(environment.reset())
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const stepCountRef = useRef(0)
   const episodeRef = useRef(0)
   const stepsInEpisodeRef = useRef(0)
   const statusRef = useRef(status)
   const speedRef = useRef(speed)
-  const lastActionRef = useRef<CartPoleAction | null>(null)
+  const stepsPerTickRef = useRef(stepsPerTick)
+  const maxStepsRef = useRef(maxSteps)
+  const lastActionRef = useRef<RocketAction | null>(null)
+  const lastLandingResultRef = useRef<LandingResult>('flying')
   statusRef.current = status
   speedRef.current = speed
+  stepsPerTickRef.current = stepsPerTick
+  maxStepsRef.current = maxSteps
 
-  const executeStep = useCallback(() => {
+  const executeStep = useCallback((silent = false) => {
     const currentState = stateRef.current
-    const action = agent.act(currentState) as CartPoleAction
+    const action = agent.act(currentState) as RocketAction
     const { nextState, reward, done } = environment.step(currentState, action)
     agent.learn(currentState, action, reward, nextState, done)
 
     lastActionRef.current = action
     stepsInEpisodeRef.current++
-
-    const step: SimulationStep = {
-      t: stepCountRef.current,
-      state: currentState,
-      action,
-      reward,
-      nextState,
-      done,
-      values: { ...agent.getValues() },
-    }
-
-    addStep(step)
     stepCountRef.current++
 
+    if (!silent) {
+      addStep({
+        t: stepCountRef.current - 1,
+        state: currentState,
+        action,
+        reward,
+        nextState,
+        done,
+        values: { ...agent.getValues() },
+      })
+    }
+
     if (done) {
-      const duration = stepsInEpisodeRef.current  // capture before resetting
+      const duration = stepsInEpisodeRef.current
+      const result = getLandingResult(nextState, done)
+      lastLandingResultRef.current = result
       setEpisodeDurations((prev) => [...prev, duration])
+      setLandingResults((prev) => [...prev, result])
       stateRef.current = environment.reset()
       episodeRef.current++
       stepsInEpisodeRef.current = 0
       lastActionRef.current = null
     } else {
+      lastLandingResultRef.current = 'flying'
       stateRef.current = nextState
     }
 
-    return stepCountRef.current >= 100000
+    return stepCountRef.current >= maxStepsRef.current
   }, [environment, agent, addStep])
 
   useEffect(() => {
@@ -111,8 +122,12 @@ export function CartPolePage() {
     }
     const tick = () => {
       if (statusRef.current !== 'running') return
-      const maxed = executeStep()
-      if (maxed) { setStatus('done'); return }
+      const n = stepsPerTickRef.current
+      for (let i = 0; i < n; i++) {
+        const isLast = i === n - 1
+        const maxed = executeStep(!isLast)
+        if (maxed) { setStatus('done'); return }
+      }
       timerRef.current = setTimeout(tick, speedRef.current)
     }
     timerRef.current = setTimeout(tick, speedRef.current)
@@ -136,7 +151,9 @@ export function CartPolePage() {
     episodeRef.current = 0
     stepsInEpisodeRef.current = 0
     lastActionRef.current = null
+    lastLandingResultRef.current = 'flying'
     setEpisodeDurations([])
+    setLandingResults([])
     resetStore()
   }, [agent, environment, resetStore])
 
@@ -152,20 +169,27 @@ export function CartPolePage() {
     episodeRef.current = 0
     stepsInEpisodeRef.current = 0
     lastActionRef.current = null
+    lastLandingResultRef.current = 'flying'
     setEpisodeDurations([])
+    setLandingResults([])
     setAlgorithmType(type)
     setEnvSeed((s) => s + 1)
   }, [resetStore])
 
-  // Extract latest state for visualization
   const latestStep = history.length > 0 ? history[history.length - 1] : null
-  const currentCartState = latestStep
-    ? (latestStep.done ? latestStep.nextState as CartPoleState : latestStep.nextState as CartPoleState)
+  const currentRocketState = latestStep
+    ? (latestStep.nextState as RocketState)
     : stateRef.current
   const latestDone = latestStep?.done ?? false
-  const survived500 = latestDone && stepsInEpisodeRef.current === 0 && episodeDurations.length > 0 && episodeDurations[episodeDurations.length - 1] >= 500
 
-  const explainer = cartpoleAlgorithms[algorithmType]
+  const landingResult: LandingResult = latestDone && stepsInEpisodeRef.current === 0 && landingResults.length > 0
+    ? landingResults[landingResults.length - 1]
+    : 'flying'
+
+  const softLandingCount = landingResults.filter((r) => r === 'landed').length
+  const successEpisodes = landingResults.map((r) => r === 'landed')
+
+  const explainer = rocketLandingAlgorithms[algorithmType]
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -175,7 +199,7 @@ export function CartPolePage() {
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-3xl font-bold text-text">
-              <span className="text-2xl mr-2">{'\uD83D\uDE80'}</span> {cartpoleIntro.title}
+              <span className="text-2xl mr-2">{'\uD83D\uDE80'}</span> {rocketLandingIntro.title}
             </h1>
             <p className="text-base text-primary-light mt-1 font-medium">
               Help Dabak learn to land — and one day, reach Mars
@@ -183,7 +207,7 @@ export function CartPolePage() {
           </div>
           <div className="flex items-center gap-2">
             <Link
-              to="/cartpole-guide"
+              to="/rocket-landing-guide"
               className="text-xs font-medium text-primary-light hover:text-primary bg-primary/10 px-3 py-1.5 rounded-lg border border-primary/20 no-underline hover:bg-primary/20 transition-colors"
             >
               Learn the Theory
@@ -201,20 +225,20 @@ export function CartPolePage() {
           <div className="bg-surface-light rounded-xl border border-surface-lighter p-6 mb-6">
             <div className="mb-5">
               <h3 className="text-sm font-bold text-accent-yellow uppercase tracking-wider mb-2">The Story</h3>
-              <p className="text-sm text-text leading-relaxed whitespace-pre-line">{cartpoleIntro.story}</p>
+              <p className="text-sm text-text leading-relaxed whitespace-pre-line">{rocketLandingIntro.story}</p>
             </div>
             <div className="mb-5">
               <h3 className="text-sm font-bold text-accent-green uppercase tracking-wider mb-2">The Objective</h3>
-              <p className="text-sm text-text leading-relaxed">{cartpoleIntro.objective}</p>
+              <p className="text-sm text-text leading-relaxed">{rocketLandingIntro.objective}</p>
             </div>
             <div className="mb-5">
               <h3 className="text-sm font-bold text-accent-blue uppercase tracking-wider mb-2">How This Simulation Works</h3>
-              <p className="text-sm text-text leading-relaxed">{cartpoleIntro.howItWorks}</p>
+              <p className="text-sm text-text leading-relaxed">{rocketLandingIntro.howItWorks}</p>
             </div>
             <div>
               <h3 className="text-sm font-bold text-primary-light uppercase tracking-wider mb-2">What You'll Learn</h3>
               <ul className="text-sm text-text-muted space-y-1">
-                {cartpoleIntro.whatYouWillLearn.map((item, i) => (
+                {rocketLandingIntro.whatYouWillLearn.map((item, i) => (
                   <li key={i} className="flex items-start gap-2">
                     <span className="text-primary-light mt-0.5">-</span>
                     <span>{item}</span>
@@ -230,7 +254,7 @@ export function CartPolePage() {
       <div className="mb-6">
         <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-2">Choose an Algorithm</h3>
         <div className="flex gap-2 flex-wrap">
-          {(Object.keys(cartpoleAlgorithms) as AlgorithmType[]).map((type) => (
+          {(Object.keys(rocketLandingAlgorithms) as AlgorithmType[]).map((type) => (
             <button
               key={type}
               onClick={() => handleAlgorithmChange(type)}
@@ -240,7 +264,7 @@ export function CartPolePage() {
                   : 'bg-surface-light text-text-muted hover:text-text hover:bg-surface-lighter'
               }`}
             >
-              {cartpoleAlgorithms[type].name}
+              {rocketLandingAlgorithms[type].name}
               <span className="ml-1 text-xs opacity-60">
                 {type === 'random' ? '(baseline)' : type === 'discretized-q' ? '(value-based)' : '(policy gradient)'}
               </span>
@@ -275,7 +299,7 @@ export function CartPolePage() {
                 <input type="range" min={0.01} max={1} step={0.01} value={alpha}
                   onChange={(e) => setAlpha(Number(e.target.value))} disabled={isRunning}
                   className="w-full accent-primary disabled:opacity-40" />
-                <p className="text-xs text-text-muted mt-0.5">{cartpoleParamExplanations.alpha}</p>
+                <p className="text-xs text-text-muted mt-0.5">{rocketLandingParamExplanations.alpha}</p>
               </div>
 
               <div>
@@ -286,7 +310,7 @@ export function CartPolePage() {
                 <input type="range" min={0} max={0.5} step={0.01} value={epsilon}
                   onChange={(e) => setEpsilon(Number(e.target.value))} disabled={isRunning}
                   className="w-full accent-primary disabled:opacity-40" />
-                <p className="text-xs text-text-muted mt-0.5">{cartpoleParamExplanations.epsilon}</p>
+                <p className="text-xs text-text-muted mt-0.5">{rocketLandingParamExplanations.epsilon}</p>
               </div>
 
               <div>
@@ -294,10 +318,10 @@ export function CartPolePage() {
                   <label className="text-text">Bins per dimension</label>
                   <span className="font-mono text-primary-light">{bins}</span>
                 </div>
-                <input type="range" min={3} max={16} step={1} value={bins}
+                <input type="range" min={3} max={10} step={1} value={bins}
                   onChange={(e) => setBins(Number(e.target.value))} disabled={isRunning}
                   className="w-full accent-primary disabled:opacity-40" />
-                <p className="text-xs text-text-muted mt-0.5">{cartpoleParamExplanations.bins}</p>
+                <p className="text-xs text-text-muted mt-0.5">{rocketLandingParamExplanations.bins}</p>
               </div>
             </>
           )}
@@ -311,7 +335,7 @@ export function CartPolePage() {
               <input type="range" min={0.001} max={0.1} step={0.001} value={lr}
                 onChange={(e) => setLr(Number(e.target.value))} disabled={isRunning}
                 className="w-full accent-primary disabled:opacity-40" />
-              <p className="text-xs text-text-muted mt-0.5">{cartpoleParamExplanations.lr}</p>
+              <p className="text-xs text-text-muted mt-0.5">{rocketLandingParamExplanations.lr}</p>
             </div>
           )}
 
@@ -324,32 +348,32 @@ export function CartPolePage() {
               <input type="range" min={0.9} max={1} step={0.005} value={gamma}
                 onChange={(e) => setGamma(Number(e.target.value))} disabled={isRunning}
                 className="w-full accent-primary disabled:opacity-40" />
-              <p className="text-xs text-text-muted mt-0.5">{cartpoleParamExplanations.gamma}</p>
+              <p className="text-xs text-text-muted mt-0.5">{rocketLandingParamExplanations.gamma}</p>
             </div>
           )}
 
           {algorithmType === 'random' && (
             <div className="col-span-full">
               <p className="text-sm text-text-muted italic">
-                Random agent has no hyperparameters — actions are chosen with 50/50 probability.
+                Random agent has no hyperparameters — actions are chosen with equal probability.
               </p>
             </div>
           )}
         </div>
       </div>
 
-      {/* ===== MAIN LAYOUT: Sidebar + Rocket ===== */}
+      {/* ===== MAIN LAYOUT ===== */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left sidebar */}
         <div className="lg:col-span-3 flex flex-col gap-4">
           <PlaybackControls
             onPlay={play}
             onPause={pause}
             onStep={step}
             onReset={handleReset}
+            maxSteps={maxSteps}
+            onMaxStepsChange={setMaxSteps}
           />
 
-          {/* Stats */}
           <div className="p-4 bg-surface-light rounded-xl border border-surface-lighter">
             <h3 className="text-sm font-semibold text-text-muted uppercase tracking-wider mb-2">
               Dabak's Progress
@@ -379,35 +403,45 @@ export function CartPolePage() {
                       {(episodeDurations.slice(-20).reduce((a, b) => a + b, 0) / Math.min(episodeDurations.length, 20)).toFixed(0)} steps
                     </span>
                   </div>
+                  <div className="flex justify-between">
+                    <span className="text-text-muted">Soft Landings</span>
+                    <span className="font-mono text-accent-green">{softLandingCount}</span>
+                  </div>
                 </>
               )}
             </div>
           </div>
 
-          {/* State panel */}
           <div className="p-4 bg-surface-light rounded-xl border border-surface-lighter">
             <h3 className="text-sm font-semibold text-text-muted uppercase tracking-wider mb-2">Current State</h3>
             <div className="flex flex-col gap-1.5 text-xs font-mono">
               <div className="flex justify-between">
                 <span className="text-text-muted">Position (x)</span>
-                <span className="text-text">{currentCartState.x.toFixed(3)}</span>
+                <span className="text-text">{currentRocketState.x.toFixed(3)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-text-muted">Velocity (v)</span>
-                <span className="text-text">{currentCartState.xDot.toFixed(3)}</span>
+                <span className="text-text">{currentRocketState.xDot.toFixed(3)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-text-muted">Altitude (y)</span>
+                <span className="text-text">{currentRocketState.y.toFixed(3)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-text-muted">Vert. vel (vy)</span>
+                <span className="text-text">{currentRocketState.yDot.toFixed(3)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-text-muted">Angle ({'\u03B8'})</span>
-                <span className="text-text">{(currentCartState.theta * 180 / Math.PI).toFixed(2)}{'\u00B0'}</span>
+                <span className="text-text">{(currentRocketState.theta * 180 / Math.PI).toFixed(2)}{'\u00B0'}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-text-muted">Angular vel ({'\u03C9'})</span>
-                <span className="text-text">{currentCartState.thetaDot.toFixed(3)}</span>
+                <span className="text-text">{currentRocketState.thetaDot.toFixed(3)}</span>
               </div>
             </div>
           </div>
 
-          {/* Legend */}
           <div className="p-4 bg-surface-light rounded-xl border border-surface-lighter">
             <h3 className="text-sm font-semibold text-text-muted uppercase tracking-wider mb-2">Legend</h3>
             <div className="flex flex-col gap-1.5 text-xs">
@@ -428,36 +462,43 @@ export function CartPolePage() {
                 <span className="text-text">Right Thrust (action 1)</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-accent-red font-bold">12{'\u00B0'}</span>
-                <span className="text-text">Max tilt before crash</span>
+                <span className="text-base">{'\u2B07\uFE0F'}</span>
+                <span className="text-text">Bottom Thrust (action 2, slows descent)</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-accent-green font-bold">500</span>
-                <span className="text-text">Steps for perfect landing</span>
+                <span className="text-accent-green font-bold">Soft</span>
+                <span className="text-text">|vy| &lt; 0.5, |{'\u03B8'}| &lt; 12{'\u00B0'}, |x| &lt; 1.0</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-accent-red font-bold">Crash</span>
+                <span className="text-text">Hard impact, tilt, or drift violation</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Right — rocket + charts + explainer */}
         <div className="lg:col-span-9 flex flex-col gap-4">
           <RocketCanvas
-            state={currentCartState}
+            state={currentRocketState}
             action={lastActionRef.current}
             done={latestDone}
-            survived500={survived500}
+            landingResult={landingResult}
             episode={episodeRef.current + 1}
             stepInEpisode={stepsInEpisodeRef.current}
           />
 
-          <CartPoleStepBreakdownPanel
+          <RocketStepBreakdownPanel
             algorithmType={algorithmType}
             alpha={alpha}
             gamma={gamma}
             discretizationConfig={discretizationConfig}
           />
 
-          <EpisodeDurationChart durations={episodeDurations} />
+          <EpisodeDurationChart
+            durations={episodeDurations}
+            successEpisodes={successEpisodes}
+            successLabel="Soft Landing"
+          />
 
           <AlgorithmExplainer
             name={explainer.name}

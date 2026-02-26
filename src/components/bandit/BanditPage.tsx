@@ -24,6 +24,7 @@ export function BanditPage() {
   const [epsilon, setEpsilon] = useState(0.1)
   const [confidence, setConfidence] = useState(2)
   const [envSeed, setEnvSeed] = useState(0)
+  const [maxSteps, setMaxSteps] = useState(5000)
   const [showIntro, setShowIntro] = useState(true)
 
   const status = useSimulationStore((s) => s.status)
@@ -48,7 +49,7 @@ export function BanditPage() {
   const { play, pause, step, reset: simReset, history } = useSimulation({
     environment,
     agent,
-    maxSteps: 5000,
+    maxSteps,
   })
 
   const handleReset = useCallback(() => {
@@ -243,6 +244,8 @@ export function BanditPage() {
             onPause={pause}
             onStep={step}
             onReset={handleReset}
+            maxSteps={maxSteps}
+            onMaxStepsChange={setMaxSteps}
           />
 
           {/* Hyperparameters */}

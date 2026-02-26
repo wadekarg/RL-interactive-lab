@@ -1,14 +1,14 @@
 import type { Agent } from '../types'
-import type { CartPoleState, CartPoleAction } from '../../environments/cartpole'
+import type { RocketState, RocketAction } from '../../environments/rocketLanding'
 import { randInt } from '../../utils/math'
 
 /**
- * Random agent — picks left or right with equal probability.
+ * Random agent — picks left, right, or bottom thrust with equal probability.
  * Serves as a baseline: ~20-30 steps per episode on average.
  */
-export class RandomAgent implements Agent<CartPoleState, CartPoleAction> {
-  act(_state: CartPoleState): CartPoleAction {
-    return randInt(2) as CartPoleAction
+export class RandomAgent implements Agent<RocketState, RocketAction> {
+  act(_state: RocketState): RocketAction {
+    return randInt(3) as RocketAction
   }
 
   learn(): void {

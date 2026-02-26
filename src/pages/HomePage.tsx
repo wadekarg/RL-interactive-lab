@@ -16,9 +16,16 @@ const labs = [
     tag: '4 algorithms + editor',
   },
   {
-    title: "Dabak's Landing",
-    description: 'Help a rocket learn to land using continuous control. Bridge from tabular RL to modern deep RL with discretization and policy gradients.',
+    title: "Dabak's Training",
+    description: 'The classic CartPole challenge. Help Dabak, our rocket, stay balanced on a test stand — push left or right to keep upright for 500 steps. The foundation for everything that follows.',
     path: '/cartpole',
+    icon: '\uD83D\uDE80',
+    tag: '3 algorithms',
+  },
+  {
+    title: "Dabak's Landing",
+    description: 'Dabak graduates to real descent! Help a rocket land softly under gravity with 3 thrusters. Shaped rewards, 6D state space — the bridge from tabular RL to modern deep RL.',
+    path: '/rocket-landing',
     icon: '\uD83D\uDE80',
     tag: '3 algorithms',
   },
@@ -36,7 +43,7 @@ export function HomePage() {
           Adjust hyperparameters, watch agents learn in real time, and build intuition.
         </p>
         <div className="flex justify-center gap-4 text-xs text-text-muted">
-          <span className="bg-surface-light px-3 py-1 rounded-full">10 algorithms</span>
+          <span className="bg-surface-light px-3 py-1 rounded-full">13 algorithms</span>
           <span className="bg-surface-light px-3 py-1 rounded-full">Interactive controls</span>
           <span className="bg-surface-light px-3 py-1 rounded-full">No backend needed</span>
           <span className="bg-surface-light px-3 py-1 rounded-full">Educational</span>

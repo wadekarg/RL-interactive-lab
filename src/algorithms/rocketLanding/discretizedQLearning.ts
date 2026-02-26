@@ -1,27 +1,27 @@
 import type { Agent } from '../types'
-import type { CartPoleState, CartPoleAction } from '../../environments/cartpole'
-import type { DiscretizationConfig } from '../../environments/cartpole'
-import { discretize, DEFAULT_DISCRETIZATION } from '../../environments/cartpole'
+import type { RocketState, RocketAction } from '../../environments/rocketLanding'
+import type { RocketDiscretizationConfig } from '../../environments/rocketLanding'
+import { discretizeRocket, DEFAULT_ROCKET_DISCRETIZATION } from '../../environments/rocketLanding'
 import { argmax, randInt } from '../../utils/math'
 
 /**
- * Q-Learning over discretized CartPole state space.
- * Bridges GridWorld's tabular Q-Learning to continuous domains
- * by binning the 4 continuous state variables into discrete buckets.
+ * Q-Learning over discretized Rocket Landing state space.
+ * Bins the 6 continuous state variables (x, xDot, y, yDot, theta, thetaDot)
+ * into discrete buckets.
  */
-export class DiscretizedQLearningAgent implements Agent<CartPoleState, CartPoleAction> {
+export class DiscretizedQLearningAgent implements Agent<RocketState, RocketAction> {
   private qTable: Map<string, number[]> = new Map()
   private alpha: number
   private gamma: number
   private epsilon: number
-  private discretizationConfig: DiscretizationConfig
-  private numActions = 2
+  private discretizationConfig: RocketDiscretizationConfig
+  private numActions = 3
 
   constructor(
     alpha = 0.1,
     gamma = 0.99,
     epsilon = 0.1,
-    discretizationConfig: DiscretizationConfig = DEFAULT_DISCRETIZATION,
+    discretizationConfig: RocketDiscretizationConfig = DEFAULT_ROCKET_DISCRETIZATION,
   ) {
     this.alpha = alpha
     this.gamma = gamma
@@ -36,21 +36,20 @@ export class DiscretizedQLearningAgent implements Agent<CartPoleState, CartPoleA
     return this.qTable.get(key)!
   }
 
-  act(state: CartPoleState): CartPoleAction {
+  act(state: RocketState): RocketAction {
     if (Math.random() < this.epsilon) {
-      return randInt(this.numActions) as CartPoleAction
+      return randInt(this.numActions) as RocketAction
     }
-    const key = discretize(state, this.discretizationConfig)
-    return argmax(this.getQ(key)) as CartPoleAction
+    const key = discretizeRocket(state, this.discretizationConfig)
+    return argmax(this.getQ(key)) as RocketAction
   }
 
-  learn(state: CartPoleState, action: CartPoleAction, reward: number, nextState: CartPoleState, done: boolean): void {
-    const key = discretize(state, this.discretizationConfig)
-    const nextKey = discretize(nextState, this.discretizationConfig)
+  learn(state: RocketState, action: RocketAction, reward: number, nextState: RocketState, done: boolean): void {
+    const key = discretizeRocket(state, this.discretizationConfig)
+    const nextKey = discretizeRocket(nextState, this.discretizationConfig)
     const q = this.getQ(key)
     const nextQ = this.getQ(nextKey)
 
-    // Off-policy: use max over next state actions
     const target = done ? reward : reward + this.gamma * Math.max(...nextQ)
     q[action] += this.alpha * (target - q[action])
   }
@@ -73,7 +72,7 @@ export class DiscretizedQLearningAgent implements Agent<CartPoleState, CartPoleA
     this.epsilon = epsilon
   }
 
-  setDiscretization(config: DiscretizationConfig): void {
+  setDiscretization(config: RocketDiscretizationConfig): void {
     this.discretizationConfig = config
   }
 }

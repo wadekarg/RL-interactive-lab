@@ -14,7 +14,7 @@ interface UseSimulationOptions<S, A> {
  * Completely decoupled from specific algorithm or environment.
  */
 export function useSimulation<S, A>({ environment, agent, maxSteps = 5000 }: UseSimulationOptions<S, A>) {
-  const { status, speed, history, addStep, setStatus, reset: resetStore } = useSimulationStore()
+  const { status, speed, stepsPerTick, history, addStep, setStatus, reset: resetStore } = useSimulationStore()
 
   const stateRef = useRef<S>(environment.reset())
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -23,27 +23,30 @@ export function useSimulation<S, A>({ environment, agent, maxSteps = 5000 }: Use
   // Refs for latest values (avoids stale closures)
   const statusRef = useRef(status)
   const speedRef = useRef(speed)
+  const stepsPerTickRef = useRef(stepsPerTick)
   statusRef.current = status
   speedRef.current = speed
+  stepsPerTickRef.current = stepsPerTick
 
-  const executeStep = useCallback(() => {
+  const executeStep = useCallback((silent = false) => {
     const currentState = stateRef.current
     const action = agent.act(currentState)
     const { nextState, reward, done } = environment.step(currentState, action)
     agent.learn(currentState, action, reward, nextState, done)
 
-    const step = {
-      t: stepCountRef.current,
-      state: currentState,
-      action,
-      reward,
-      nextState,
-      done,
-      values: { ...agent.getValues() },
-    }
-
-    addStep(step)
     stepCountRef.current++
+
+    if (!silent) {
+      addStep({
+        t: stepCountRef.current - 1,
+        state: currentState,
+        action,
+        reward,
+        nextState,
+        done,
+        values: { ...agent.getValues() },
+      })
+    }
 
     if (done || stepCountRef.current >= maxSteps) {
       stateRef.current = environment.reset()
@@ -63,10 +66,14 @@ export function useSimulation<S, A>({ environment, agent, maxSteps = 5000 }: Use
 
     const tick = () => {
       if (statusRef.current !== 'running') return
-      const finished = executeStep()
-      if (finished) {
-        setStatus('done')
-        return
+      const n = stepsPerTickRef.current
+      for (let i = 0; i < n; i++) {
+        const isLast = i === n - 1
+        const finished = executeStep(!isLast)
+        if (finished) {
+          setStatus('done')
+          return
+        }
       }
       timerRef.current = setTimeout(tick, speedRef.current)
     }

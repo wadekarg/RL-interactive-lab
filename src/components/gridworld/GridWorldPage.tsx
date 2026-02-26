@@ -13,7 +13,7 @@ import { AlgorithmExplainer } from '../shared/AlgorithmExplainer'
 import { GridCanvas } from './GridCanvas'
 import { StepBreakdownPanel } from './StepBreakdownPanel'
 import { gridworldAlgorithms, gridworldIntro, gridworldParamExplanations } from '../../content/gridworldExplainer'
-import type { Agent, SimulationStep } from '../../algorithms/types'
+import type { Agent } from '../../algorithms/types'
 
 type AlgorithmType = 'q-learning' | 'sarsa' | 'value-iteration' | 'policy-iteration'
 type BrushType = 'empty' | 'wall' | 'lion' | 'start' | 'goal'
@@ -67,12 +67,13 @@ export function GridWorldPage() {
   const [showIntro, setShowIntro] = useState(true)
   const [editMode, setEditMode] = useState(false)
   const [brush, setBrush] = useState<BrushType>('wall')
+  const [maxSteps, setMaxSteps] = useState(10000)
   const [envSeed, setEnvSeed] = useState(0)
 
   // Grid state (user-editable)
   const [gridData, setGridData] = useState(() => createDefaultGrid(6, 6))
 
-  const { status, speed, history, addStep, setStatus, reset: resetStore, currentStep } = useSimulationStore()
+  const { status, speed, stepsPerTick, history, addStep, setStatus, reset: resetStore, currentStep } = useSimulationStore()
   const isRunning = status === 'running' || status === 'paused'
 
   const environment = useMemo(() => {
@@ -109,29 +110,34 @@ export function GridWorldPage() {
   const episodeRef = useRef(0)
   const statusRef = useRef(status)
   const speedRef = useRef(speed)
+  const stepsPerTickRef = useRef(stepsPerTick)
+  const maxStepsRef = useRef(maxSteps)
   statusRef.current = status
   speedRef.current = speed
+  stepsPerTickRef.current = stepsPerTick
+  maxStepsRef.current = maxSteps
 
   const isDPAlgorithm = algorithmType === 'value-iteration' || algorithmType === 'policy-iteration'
 
-  const executeStep = useCallback(() => {
+  const executeStep = useCallback((silent = false) => {
     const currentState = stateRef.current
     const action = agent.act(currentState)
     const { nextState, reward, done } = environment.step(currentState, action)
     agent.learn(currentState, action, reward, nextState, done)
 
-    const step: SimulationStep = {
-      t: stepCountRef.current,
-      state: currentState,
-      action,
-      reward,
-      nextState,
-      done,
-      values: { ...agent.getValues() },
-    }
-
-    addStep(step)
     stepCountRef.current++
+
+    if (!silent) {
+      addStep({
+        t: stepCountRef.current - 1,
+        state: currentState,
+        action,
+        reward,
+        nextState,
+        done,
+        values: { ...agent.getValues() },
+      })
+    }
 
     if (done) {
       stateRef.current = environment.reset()
@@ -140,7 +146,7 @@ export function GridWorldPage() {
       stateRef.current = nextState
     }
 
-    return stepCountRef.current >= 10000
+    return stepCountRef.current >= maxStepsRef.current
   }, [environment, agent, addStep])
 
   useEffect(() => {
@@ -150,8 +156,12 @@ export function GridWorldPage() {
     }
     const tick = () => {
       if (statusRef.current !== 'running') return
-      const maxed = executeStep()
-      if (maxed) { setStatus('done'); return }
+      const n = stepsPerTickRef.current
+      for (let i = 0; i < n; i++) {
+        const isLast = i === n - 1
+        const maxed = executeStep(!isLast)
+        if (maxed) { setStatus('done'); return }
+      }
       timerRef.current = setTimeout(tick, speedRef.current)
     }
     timerRef.current = setTimeout(tick, speedRef.current)
@@ -523,6 +533,8 @@ export function GridWorldPage() {
             onPause={pause}
             onStep={step}
             onReset={handleReset}
+            maxSteps={maxSteps}
+            onMaxStepsChange={setMaxSteps}
           />
 
           {/* Visualization Layers */}

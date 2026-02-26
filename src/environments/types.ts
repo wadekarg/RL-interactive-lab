@@ -9,4 +9,5 @@ export interface StepResult<S> {
   nextState: S
   reward: number
   done: boolean
+  info?: Record<string, unknown>
 }
