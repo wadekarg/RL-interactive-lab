@@ -14,7 +14,7 @@
 
 <br>
 
-[![Launch the Lab](https://img.shields.io/badge/🚀_Launch_the_Lab-4361ee?style=for-the-badge&logoColor=white)](https://wadekarg.github.io/RL-interactive-lab/)
+## [🚀 Launch the Lab](https://wadekarg.github.io/RL-interactive-lab/)
 
 <br>
 
@@ -63,9 +63,7 @@ Help Boru the elephant navigate to water while avoiding lions and cliffs. Design
 <tr>
 <td width="50%">
 
-### Classic CartPole
-<img src="public/cartpole.png" alt="CartPole" width="40">
-
+### 🏋️ Classic CartPole
 The classic RL benchmark. Push a cart left or right to keep a pole balanced for 500 steps.
 
 ![Random](https://img.shields.io/badge/Random_Baseline-adb5bd?style=flat-square)
@@ -272,7 +270,7 @@ MIT License. See [LICENSE](LICENSE) for details.
 
 <div align="center">
 
-**Vibe coded by Gajanan Wadekar**
+Vibe coded by **Gajanan Wadekar**
 
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/gajananwadekar/)
 [![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/wadekarg)
