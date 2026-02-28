@@ -272,7 +272,7 @@ MIT License. See [LICENSE](LICENSE) for details.
 
 <div align="center">
 
-Vibe coded by **Gajanan Wadekar** &nbsp; [![LinkedIn](https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/gajananwadekar/)
+Vibe coded by **[Gajanan Wadekar](https://www.linkedin.com/in/gajananwadekar/)**
 
 Built for education. Runs entirely in your browser.
 
