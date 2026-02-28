@@ -1,14 +1,12 @@
 export const rocketLandingIntro = {
-  title: "Dabak's Landing",
-  story: `Dabak \u2014 our rocket \u2014 has graduated from the test stand. Now comes the real test \u2014 descending from altitude under gravity and landing softly.
+  title: 'Rocket Landing',
+  story: `The rocket starts at altitude y=1.0 and must descend through gravity, firing left, right, or bottom thrusters to stay upright and touch down softly on the pad.
 
-On a dusty launchpad, Dabak starts at altitude y=1.0 and must descend through gravity, firing left, right, or bottom thrusters to stay upright and touch down softly on the pad.
+Every moment the rocket stays airborne earns a point. But a soft landing earns a massive bonus \u2014 while crashing earns a harsh penalty. If the rocket tilts too far or drifts off course mid-flight, the mission fails and it must try again.
 
-Every moment Dabak stays airborne earns a point. But a soft landing earns a massive bonus \u2014 while crashing earns a harsh penalty. If the rocket tilts too far or drifts off course mid-flight, the mission fails and Dabak must try again.
+The rocket needs YOUR help to learn using Reinforcement Learning algorithms. Unlike Boru's grid, this world is continuous \u2014 position, velocity, altitude, angle, and spin are all real numbers, not grid cells.`,
 
-Dabak dreams big \u2014 once it masters landing on Earth, it plans to take on Mars. But first, it needs YOUR help to learn using Reinforcement Learning algorithms. Unlike Boru's grid, Dabak's world is continuous \u2014 position, velocity, altitude, angle, and spin are all real numbers, not grid cells.`,
-
-  objective: `Land the rocket softly by controlling horizontal and vertical thrust. Dabak starts at altitude y=1.0 and must descend to y=0 with low speed (|vy| < 0.5), minimal tilt (|\u03B8| < 12\u00B0), and centered position (|x| < 1.0) for a soft landing bonus.`,
+  objective: `Land the rocket softly by controlling horizontal and vertical thrust. The rocket starts at altitude y=1.0 and must descend to y=0 with low speed (|vy| < 0.5), minimal tilt (|\u03B8| < 12\u00B0), and centered position (|x| < 1.0) for a soft landing bonus.`,
 
   whatYouWillLearn: [
     'How continuous state spaces differ from discrete grids',
@@ -18,14 +16,14 @@ Dabak dreams big \u2014 once it masters landing on Earth, it plans to take on Ma
     'How shaped rewards guide learning toward soft landings',
   ],
 
-  howItWorks: `Dabak's state is described by 6 continuous numbers: horizontal position (x), velocity (v), altitude (y), vertical velocity (vy), tilt angle (\u03B8), and angular velocity (\u03C9). At each timestep, Dabak can fire a left thruster, right thruster, or bottom thruster (main engine, fights gravity). Gravity pulls the rocket down constantly. If the tilt exceeds \u00B112\u00B0 or the rocket drifts beyond \u00B12.4 units while airborne, the episode ends in a crash. Landing with low speed and good alignment earns a big bonus \u2014 one step closer to Mars.`,
+  howItWorks: `The rocket's state is described by 6 continuous numbers: horizontal position (x), velocity (v), altitude (y), vertical velocity (vy), tilt angle (\u03B8), and angular velocity (\u03C9). At each timestep, it can fire a left thruster, right thruster, or bottom thruster (main engine, fights gravity). Gravity pulls the rocket down constantly. If the tilt exceeds \u00B112\u00B0 or the rocket drifts beyond \u00B12.4 units while airborne, the episode ends in a crash. Landing with low speed and good alignment earns a big bonus.`,
 }
 
 export const rocketLandingAlgorithms = {
   random: {
     name: 'Random Baseline',
     description:
-      'No learning at all \u2014 Dabak fires thrusters randomly. This establishes a baseline: pure luck typically crashes in ~20 steps.',
+      'No learning at all \u2014 the rocket fires thrusters randomly. This establishes a baseline: pure luck typically crashes in ~20 steps.',
     sections: [
       {
         title: 'How It Works',
@@ -42,7 +40,7 @@ export const rocketLandingAlgorithms = {
   'discretized-q': {
     name: 'Discretized Q-Learning',
     description:
-      'The same Q-Learning from GridWorld, but adapted for continuous states by binning the 6 state variables into discrete buckets. Dabak learns a Q-table over these bins.',
+      'The same Q-Learning from GridWorld, but adapted for continuous states by binning the 6 state variables into discrete buckets. The rocket learns a Q-table over these bins.',
     sections: [
       {
         title: 'The Discretization Trick',
@@ -70,7 +68,7 @@ export const rocketLandingAlgorithms = {
       {
         title: 'Policy Gradient Intuition',
         content:
-          'Imagine Dabak has a "preference" for left, right, or bottom thrust in each state. After each episode, if the episode ended in a soft landing (good!), increase the probability of the actions taken. If it crashed (bad!), decrease them. Over time, good action patterns become more likely.',
+          'Imagine the rocket has a "preference" for left, right, or bottom thrust in each state. After each episode, if the episode ended in a soft landing (good!), increase the probability of the actions taken. If it crashed (bad!), decrease them. Over time, good action patterns become more likely.',
         equation: '\\theta \\leftarrow \\theta + \\alpha \\sum_t (G_t - b) \\nabla_\\theta \\log \\pi_\\theta(a_t | s_t)',
       },
       {
@@ -95,8 +93,8 @@ export const rocketLandingAlgorithms = {
 
 export const rocketLandingParamExplanations: Record<string, string> = {
   alpha: 'Learning rate \u2014 how much Q-values shift after each step. Try 0.1 to start.',
-  gamma: 'Discount factor \u2014 how much Dabak values future survival vs. the current moment. High \u03B3 (0.99) = plan ahead. Low \u03B3 = short-sighted.',
-  epsilon: 'Exploration rate \u2014 how often Dabak fires a random thruster instead of using its best estimate. Needed for discovery but hurts performance.',
+  gamma: 'Discount factor \u2014 how much the rocket values future survival vs. the current moment. High \u03B3 (0.99) = plan ahead. Low \u03B3 = short-sighted.',
+  epsilon: 'Exploration rate \u2014 how often the rocket fires a random thruster instead of using its best estimate. Needed for discovery but hurts performance.',
   bins: 'Number of bins per state dimension (6 dimensions total). More bins = finer control but exponentially more states. Fewer bins = faster but coarser.',
   lr: 'Policy learning rate \u2014 how quickly the policy weights update. Too high = unstable. Too low = slow. Try 0.01.',
 }

@@ -134,12 +134,12 @@ export function RocketLandingGuidePage() {
           Rocket Landing &amp; Continuous Control
         </h1>
         <p className="text-lg text-text-muted max-w-2xl mx-auto">
-          Dabak has graduated from the test stand. Now comes the real test — descending from altitude under gravity and landing softly.
+          A rocket must descend from altitude under gravity and land softly on the pad.
         </p>
         <div className="flex justify-center gap-3 mt-4 text-xs text-text-muted">
           <span className="bg-surface-light px-3 py-1 rounded-full">10 sections</span>
           <span className="bg-surface-light px-3 py-1 rounded-full">3 algorithms</span>
-          <span className="bg-surface-light px-3 py-1 rounded-full">Dabak narrative</span>
+          <span className="bg-surface-light px-3 py-1 rounded-full">Rocket narrative</span>
         </div>
       </div>
 
@@ -183,25 +183,25 @@ export function RocketLandingGuidePage() {
         </Accordion>
 
         {/* ── SECTION 2 ── */}
-        <Accordion number={2} title="Meet Dabak: A Rocket Learning to Land">
+        <Accordion number={2} title="The Rocket Landing Problem">
           <p className="text-sm text-text leading-relaxed mb-4">
-            Dabak is a small rocket learning to land on a launchpad. It starts at altitude y=1.0 and must descend through gravity,
+            A small rocket is learning to land on a launchpad. It starts at altitude y=1.0 and must descend through gravity,
             using thrusters to control its approach. The goal: touch down softly, centered on the pad, with minimal tilt. A soft
             landing earns a big reward bonus; a hard crash earns a penalty.
           </p>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 my-5">
             {[
-              { rocket: 'Horizontal position', symbol: 'x' },
-              { rocket: 'Drift speed', symbol: 'v' },
-              { rocket: 'Altitude', symbol: 'y' },
-              { rocket: 'Descent rate', symbol: 'vy' },
-              { rocket: 'Tilt angle', symbol: '\u03B8' },
-              { rocket: 'Spin rate', symbol: '\u03C9' },
+              { label: 'Horizontal position', symbol: 'x' },
+              { label: 'Drift speed', symbol: 'v' },
+              { label: 'Altitude', symbol: 'y' },
+              { label: 'Descent rate', symbol: 'vy' },
+              { label: 'Tilt angle', symbol: '\u03B8' },
+              { label: 'Spin rate', symbol: '\u03C9' },
             ].map((m) => (
               <div key={m.symbol} className="bg-surface rounded-lg p-3 text-center">
                 <span className="text-lg font-bold text-primary-light">{m.symbol}</span>
-                <p className="text-xs font-semibold text-text mt-1 mb-0">{m.rocket}</p>
+                <p className="text-xs font-semibold text-text mt-1 mb-0">{m.label}</p>
               </div>
             ))}
           </div>
@@ -210,7 +210,7 @@ export function RocketLandingGuidePage() {
             <strong>Rules:</strong>
           </p>
           <ul className="text-sm text-text-muted space-y-1 mb-4">
-            <li className="flex items-start gap-2"><span className="text-primary-light">-</span>Dabak gets +1 reward for every timestep it stays airborne</li>
+            <li className="flex items-start gap-2"><span className="text-primary-light">-</span>The rocket gets +1 reward for every timestep it stays airborne</li>
             <li className="flex items-start gap-2"><span className="text-primary-light">-</span>Episode ends when altitude reaches 0 (landing/crash) or airborne violation</li>
             <li className="flex items-start gap-2"><span className="text-primary-light">-</span>Soft landing (|vy| &lt; 0.5, |{'\u03B8'}| &lt; 12{'\u00B0'}, |x| &lt; 1.0): up to +20 bonus</li>
             <li className="flex items-start gap-2"><span className="text-primary-light">-</span>Hard crash: -10 penalty. Airborne violation: -5 penalty</li>
@@ -223,22 +223,22 @@ export function RocketLandingGuidePage() {
             but a <em>controlled descent and soft touchdown</em>.
           </Callout>
 
-          <SimButton label="See Dabak in the simulator" className="mt-2" />
+          <SimButton label="See it in the simulator" className="mt-2" />
         </Accordion>
 
         {/* ── SECTION 3 ── */}
         <Accordion number={3} title="The State Space: Six Numbers That Describe Everything">
           <p className="text-sm text-text leading-relaxed mb-4">
-            Dabak's entire situation at any moment is captured by 6 numbers. Together, they tell you
+            The rocket's entire situation at any moment is captured by 6 numbers. Together, they tell you
             everything you need to know to decide what action to take.
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
             {[
               { symbol: 'x', name: 'Position', range: '[-2.4, 2.4]', desc: 'How far left or right of center. Outside this range while airborne = crash.', color: 'text-accent-blue' },
-              { symbol: 'v', name: 'Velocity', range: '(-\u221E, +\u221E)', desc: 'How fast Dabak is drifting. Positive = moving right.', color: 'text-accent-green' },
+              { symbol: 'v', name: 'Velocity', range: '(-\u221E, +\u221E)', desc: 'How fast the rocket is drifting. Positive = moving right.', color: 'text-accent-green' },
               { symbol: 'y', name: 'Altitude', range: '[0, 1.0]', desc: 'Height above the landing pad. Starts at 1.0, reaches 0 on landing.', color: 'text-primary-light' },
-              { symbol: 'vy', name: 'Descent Rate', range: '(-\u221E, +\u221E)', desc: 'How fast Dabak is falling. Negative = descending. Key for soft landing.', color: 'text-accent-yellow' },
+              { symbol: 'vy', name: 'Descent Rate', range: '(-\u221E, +\u221E)', desc: 'How fast the rocket is falling. Negative = descending. Key for soft landing.', color: 'text-accent-yellow' },
               { symbol: '\u03B8', name: 'Tilt Angle', range: '[-12\u00B0, 12\u00B0]', desc: 'How tilted the rocket is. Outside \u00B112\u00B0 while airborne = crash.', color: 'text-accent-red' },
               { symbol: '\u03C9', name: 'Angular Velocity', range: '(-\u221E, +\u221E)', desc: 'How fast the tilt is changing. The key to anticipating crashes.', color: 'text-text-muted' },
             ].map((v) => (
@@ -362,7 +362,7 @@ export function RocketLandingGuidePage() {
           <StepBox steps={[
             {
               label: 'Observe 6D state: x=0.37, v=-0.12, y=0.65, vy=-1.2, \u03B8=0.021, \u03C9=0.85',
-              detail: 'Dabak reads its sensors. Six real numbers describe its complete situation.',
+              detail: 'The rocket reads its sensors. Six real numbers describe its complete situation.',
               type: 'neutral',
             },
             {
@@ -377,7 +377,7 @@ export function RocketLandingGuidePage() {
             },
             {
               label: 'Execute action, observe reward and next state',
-              detail: 'Dabak fires the thruster, physics advances one timestep, and we get the new 6D state + reward.',
+              detail: 'The rocket fires the thruster, physics advances one timestep, and we get the new 6D state + reward.',
               type: 'exploit',
             },
             {
@@ -483,7 +483,7 @@ export function RocketLandingGuidePage() {
 
           <StepBox steps={[
             {
-              label: 'Play a full episode (Dabak descends until landing or crash)',
+              label: 'Play a full episode (the rocket descends until landing or crash)',
               detail: 'Record every (state, action, reward) triple in a trajectory buffer.',
               type: 'explore',
             },
@@ -597,7 +597,7 @@ export function RocketLandingGuidePage() {
         {/* ── SECTION 10 ── */}
         <Accordion number={10} title="Going Deeper: From Earth to Mars and Beyond">
           <p className="text-sm text-text leading-relaxed mb-5">
-            Dabak's landing challenge is the "Hello World" of continuous control RL. The same ideas — in more
+            The rocket landing challenge is the "Hello World" of continuous control RL. The same ideas — in more
             sophisticated forms — power real rocket landings (including on Mars), robotic manipulation, and game-playing AI.
           </p>
 
@@ -625,15 +625,15 @@ export function RocketLandingGuidePage() {
             </div>
 
             <div className="bg-surface rounded-xl p-4 border border-surface-lighter">
-              <h4 className="text-sm font-bold text-text mb-1">Real Rocket Landing — Dabak's Dream</h4>
+              <h4 className="text-sm font-bold text-text mb-1">Real Rocket Landing</h4>
               <p className="text-xs text-text-muted italic mb-2">"From launchpad landings to Mars and beyond"</p>
               <p className="text-sm text-text-muted leading-relaxed mb-2">
                 SpaceX's Falcon 9, NASA's Mars landers — they all use similar state spaces: position, velocity,
-                orientation, angular rates — just in 3D instead of 2D. Dabak's 6D state with gravity and thrust
+                orientation, angular rates — just in 3D instead of 2D. Our rocket's 6D state with gravity and thrust
                 is a simplified version of the same problem. Research groups have already trained RL
                 agents to land rockets in simulation using algorithms descended from what you've seen here.
               </p>
-              <p className="text-xs text-primary-light">Dabak's 6-dimensional state space × 3 actions → a real lander's 12-dimensional state × continuous thrust is a difference of degree, not kind.</p>
+              <p className="text-xs text-primary-light">Our 6-dimensional state space × 3 actions → a real lander's 12-dimensional state × continuous thrust is a difference of degree, not kind.</p>
             </div>
 
             <div className="bg-surface rounded-xl p-4 border border-surface-lighter">
@@ -664,7 +664,7 @@ export function RocketLandingGuidePage() {
       {/* Footer */}
       <div className="mt-10 text-center">
         <p className="text-sm text-text-muted mb-3">
-          Now that you understand the theory, help Dabak master landing in real time.
+          Now that you understand the theory, help the rocket master landing in real time.
         </p>
         <SimButton label="Open the Rocket Landing Simulator" />
       </div>

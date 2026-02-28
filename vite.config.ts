@@ -3,5 +3,5 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  base: '/RL-interactive-lab/',
+  base: process.env.NODE_ENV === 'production' ? '/RL-interactive-lab/' : '/',
 })

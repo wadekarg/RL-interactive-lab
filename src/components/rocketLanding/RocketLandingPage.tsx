@@ -202,7 +202,7 @@ export function RocketLandingPage() {
               <span className="text-2xl mr-2">{'\uD83D\uDE80'}</span> {rocketLandingIntro.title}
             </h1>
             <p className="text-base text-primary-light mt-1 font-medium">
-              Help Dabak learn to land — and one day, reach Mars
+              Help the rocket learn to land softly on the pad
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -376,7 +376,7 @@ export function RocketLandingPage() {
 
           <div className="p-4 bg-surface-light rounded-xl border border-surface-lighter">
             <h3 className="text-sm font-semibold text-text-muted uppercase tracking-wider mb-2">
-              Dabak's Progress
+              Progress
             </h3>
             <div className="flex flex-col gap-2 text-sm">
               <div className="flex justify-between">
@@ -447,7 +447,7 @@ export function RocketLandingPage() {
             <div className="flex flex-col gap-1.5 text-xs">
               <div className="flex items-center gap-2">
                 <span className="text-base">{'\uD83D\uDE80'}</span>
-                <span className="text-text">Dabak the Rocket (agent)</span>
+                <span className="text-text">The Rocket (agent)</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="w-4 h-2 bg-yellow-500 rounded-sm inline-block" />

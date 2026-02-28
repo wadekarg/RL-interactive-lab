@@ -155,7 +155,7 @@ export function drawRocket(ctx: CanvasRenderingContext2D, pal: RocketPalette) {
   ctx.fillStyle = pal.rocketNose
   ctx.fillRect(-ROCKET_W / 2, -ROCKET_H, ROCKET_W, 4)
 
-  // Window (porthole) — positioned higher to leave room for label
+  // Porthole window
   ctx.fillStyle = pal.rocketWindowRim
   ctx.beginPath()
   ctx.arc(0, -ROCKET_H * 0.78, WINDOW_R + 2, 0, Math.PI * 2)
@@ -164,21 +164,20 @@ export function drawRocket(ctx: CanvasRenderingContext2D, pal: RocketPalette) {
   ctx.beginPath()
   ctx.arc(0, -ROCKET_H * 0.78, WINDOW_R, 0, Math.PI * 2)
   ctx.fill()
-  // Window highlight
   ctx.fillStyle = 'rgba(255,255,255,0.35)'
   ctx.beginPath()
   ctx.arc(-2, -ROCKET_H * 0.78 - 2, WINDOW_R * 0.35, 0, Math.PI * 2)
   ctx.fill()
 
-  // "DABAK" label — vertical on rocket body
+  // "ROCKET" label — vertical on rocket body
   ctx.save()
-  ctx.font = 'bold 9px system-ui'
+  ctx.font = 'bold 7px system-ui'
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
   ctx.fillStyle = pal.rocketLabel
-  const label = 'DABAK'
-  const labelStartY = -ROCKET_H * 0.58
-  const letterSpacing = 9
+  const label = 'ROCKET'
+  const labelStartY = -ROCKET_H * 0.52
+  const letterSpacing = 8
   for (let i = 0; i < label.length; i++) {
     ctx.fillText(label[i], 0, labelStartY + i * letterSpacing)
   }

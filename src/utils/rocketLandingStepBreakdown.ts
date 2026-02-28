@@ -357,7 +357,7 @@ export function generateRocketTDNarrative(bd: RocketTDBreakdown): string {
       outcome = `Crashed! Episode ${bd.episode} ends after ${bd.stepInEpisode + 1} steps (y=${bd.nextState.y.toFixed(2)}).`
     }
   } else {
-    outcome = `Dabak descends (y=${bd.nextState.y.toFixed(2)}, +${fmt(bd.reward)} reward). Step ${bd.stepInEpisode + 1} of episode ${bd.episode}.`
+    outcome = `The rocket descends (y=${bd.nextState.y.toFixed(2)}, +${fmt(bd.reward)} reward). Step ${bd.stepInEpisode + 1} of episode ${bd.episode}.`
   }
 
   const tdInterpretation = bd.tdError > 0.001
@@ -366,7 +366,7 @@ export function generateRocketTDNarrative(bd: RocketTDBreakdown): string {
       ? `TD error is negative (${fmt(bd.tdError)}) \u2014 outcome was worse than expected, so Q-value decreases.`
       : `TD error is near zero \u2014 prediction matched reality, minimal update.`
 
-  return `Dabak fired ${bd.actionName} (${moveType}). Bin [${bd.discretizedKey}] \u2192 [${bd.nextDiscretizedKey}]. ${outcome} ${tdInterpretation}`
+  return `The rocket fired ${bd.actionName} (${moveType}). Bin [${bd.discretizedKey}] \u2192 [${bd.nextDiscretizedKey}]. ${outcome} ${tdInterpretation}`
 }
 
 export function generateRocketReinforceNarrative(bd: RocketReinforceBreakdown): string {
@@ -389,15 +389,15 @@ export function generateRocketReinforceNarrative(bd: RocketReinforceBreakdown): 
         ? ` Return > baseline (${fmt(bd.baseline)}) \u2014 actions in this episode get reinforced.`
         : ` Return < baseline (${fmt(bd.baseline)}) \u2014 actions in this episode get discouraged.`
       : ''
-    return `Dabak fired ${bd.actionName} (${probStr}). ${resultText} ${durText}${baselineNote} Weights updated using the full trajectory.`
+    return `The rocket fired ${bd.actionName} (${probStr}). ${resultText} ${durText}${baselineNote} Weights updated using the full trajectory.`
   }
 
-  return `Dabak fired ${bd.actionName} (${probStr}). Descending (y=${bd.nextState.y.toFixed(2)}). Step ${bd.stepInEpisode + 1} of episode ${bd.episode}. ${policyNote} No weight update until episode ends.`
+  return `The rocket fired ${bd.actionName} (${probStr}). Descending (y=${bd.nextState.y.toFixed(2)}). Step ${bd.stepInEpisode + 1} of episode ${bd.episode}. ${policyNote} No weight update until episode ends.`
 }
 
 export function generateRocketRandomNarrative(bd: RocketRandomBreakdown): string {
   if (bd.done) {
-    return `Dabak fired ${bd.actionName} (random, 33% each). Episode ended after ${bd.stepInEpisode + 1} steps. No learning \u2014 this is the baseline to beat.`
+    return `The rocket fired ${bd.actionName} (random, 33% each). Episode ended after ${bd.stepInEpisode + 1} steps. No learning \u2014 this is the baseline to beat.`
   }
-  return `Dabak fired ${bd.actionName} (random, 33% each). Step ${bd.stepInEpisode + 1} of episode ${bd.episode}. Each action has equal probability \u2014 no state information used.`
+  return `The rocket fired ${bd.actionName} (random, 33% each). Step ${bd.stepInEpisode + 1} of episode ${bd.episode}. Each action has equal probability \u2014 no state information used.`
 }

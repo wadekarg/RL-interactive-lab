@@ -23,8 +23,8 @@ const labs = [
     tag: '3 algorithms',
   },
   {
-    title: "Dabak's Landing",
-    description: 'Dabak graduates to real descent! Help a rocket land softly under gravity with 3 thrusters. Shaped rewards, 6D state space — the bridge from tabular RL to modern deep RL.',
+    title: 'Rocket Landing',
+    description: 'Help a rocket land softly under gravity with 3 thrusters. Shaped rewards, 6D state space — the bridge from tabular RL to modern deep RL.',
     path: '/rocket-landing',
     icon: '\uD83D\uDE80',
     tag: '3 algorithms',
@@ -113,9 +113,24 @@ export function HomePage() {
         </div>
       </div>
 
-      <div className="mt-8 text-center">
+      <div className="mt-12 text-center space-y-3">
         <p className="text-sm text-text-muted">
           Built for education. Runs entirely in your browser. Open source.
+        </p>
+        <p className="text-sm text-text-muted">
+          Vibe coded by <span className="text-text font-medium">Gajanan Wadekar</span>
+          {' · '}
+          <a href="https://www.linkedin.com/in/gajananwadekar/" target="_blank" rel="noopener noreferrer" className="text-primary-light hover:text-primary transition-colors">LinkedIn</a>
+          {' · '}
+          <a href="https://github.com/wadekarg" target="_blank" rel="noopener noreferrer" className="text-primary-light hover:text-primary transition-colors">GitHub</a>
+        </p>
+        <p className="text-xs text-text-muted max-w-2xl mx-auto">
+          Inspired by Sutton &amp; Barto's <em>Reinforcement Learning: An Introduction</em>,
+          coursework at UT Arlington (<span className="whitespace-nowrap">Dr. Manfred Huber</span>), and the RL community on YouTube.
+        </p>
+        <p className="text-xs text-text-muted">
+          Found an error or have suggestions?{' '}
+          <a href="https://github.com/wadekarg" target="_blank" rel="noopener noreferrer" className="text-primary-light hover:text-primary transition-colors">Open an issue on GitHub</a>.
         </p>
       </div>
     </div>
