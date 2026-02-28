@@ -24,7 +24,7 @@ export function BanditPage() {
   const [epsilon, setEpsilon] = useState(0.1)
   const [confidence, setConfidence] = useState(2)
   const [envSeed, setEnvSeed] = useState(0)
-  const [maxSteps, setMaxSteps] = useState(5000)
+  const [maxSteps, setMaxSteps] = useState(500)
   const [showIntro, setShowIntro] = useState(true)
 
   const status = useSimulationStore((s) => s.status)
@@ -72,7 +72,19 @@ export function BanditPage() {
   const totalReward = history.reduce((sum, s) => sum + s.reward, 0)
   const bestArmIdx = environment.trueMeans.indexOf(Math.max(...environment.trueMeans))
   const optimalPulls = counts[bestArmIdx] ?? 0
-  const optimalRate = history.length > 0 ? ((optimalPulls / history.length) * 100).toFixed(1) : '0.0'
+  const optimalRate = totalStepCount > 0 ? ((optimalPulls / totalStepCount) * 100).toFixed(1) : '0.0'
+
+  // Compute optimal pull % over time for the chart
+  // Uses the full counts array from each recorded step (includes silent/batched steps)
+  const optimalPctData = useMemo(() => {
+    return history.map((step) => {
+      const stepCounts = (step.values?.counts ?? []) as number[]
+      const totalPulls = stepCounts.reduce((a, b) => a + b, 0)
+      const optPulls = stepCounts[bestArmIdx] ?? 0
+      const pct = totalPulls > 0 ? Math.round((optPulls / totalPulls) * 1000) / 10 : 0
+      return { t: step.t, optimalPct: pct }
+    })
+  }, [history, bestArmIdx])
 
   // Hyperparameter configs per algorithm
   const hyperparams: HyperparamConfig[] = useMemo(() => {
@@ -247,6 +259,9 @@ export function BanditPage() {
             onReset={handleReset}
             maxSteps={maxSteps}
             onMaxStepsChange={setMaxSteps}
+            showBatch={false}
+            minSpeed={1}
+            maxSpeed={1000}
           />
 
           {/* Hyperparameters */}
@@ -340,7 +355,16 @@ export function BanditPage() {
             confidence={confidence}
           />
 
-          <RewardChart history={history} />
+          <RewardChart
+            history={history}
+            secondary={{
+              data: optimalPctData,
+              dataKey: 'optimalPct',
+              name: 'Optimal Pull %',
+              domain: [0, 100],
+              unit: '%',
+            }}
+          />
 
           <AlgorithmExplainer
             name={explainer.name}

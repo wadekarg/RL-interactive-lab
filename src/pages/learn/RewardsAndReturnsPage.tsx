@@ -559,7 +559,7 @@ export function RewardsAndReturnsPage() {
             {[
               { env: 'Bandit', reward: 'Drawn from hidden distribution (e.g., Normal(μ, 1))', type: 'Stochastic', icon: '\uD83C\uDFB0' },
               { env: 'GridWorld', reward: '+1 at goal, -1 at cliffs, -0.04 per step', type: 'Shaped', icon: '\uD83D\uDC18' },
-              { env: 'CartPole', reward: '+1 per step alive', type: 'Dense', icon: '\uD83D\uDE80' },
+              { env: 'CartPole', reward: '+1 per step alive', type: 'Dense', icon: '\uD83C\uDFCB\uFE0F' },
               { env: 'Rocket Landing', reward: '+1/step, +20 soft landing, -10 crash', type: 'Shaped', icon: '\uD83D\uDE80' },
             ].map(({ env, reward, type, icon }) => (
               <div key={env} className="flex items-center gap-3 bg-surface-light rounded-lg p-3">

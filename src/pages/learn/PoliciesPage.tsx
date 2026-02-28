@@ -480,8 +480,7 @@ export function PoliciesPage() {
 
           <Callout type="think">
             If the environment is deterministic and fully observable, the optimal policy is always
-            deterministic — there's no benefit to randomness. But even in this case, <em>learning</em>
-            the optimal policy usually requires some exploration (randomness during training).
+            deterministic — there's no benefit to randomness. But even in this case, <em>learning</em> the optimal policy usually requires some exploration (randomness during training).
           </Callout>
         </Accordion>
 
@@ -540,55 +539,62 @@ export function PoliciesPage() {
           </p>
 
           <div className="flex flex-col gap-3 mb-4">
-            {[
-              {
-                algo: '\u03B5-Greedy (Bandit, GridWorld)',
-                type: 'Stochastic',
-                icon: '\uD83C\uDFB2',
-                desc: 'With probability \u03B5, pick a random action (explore). Otherwise, pick the action with highest Q-value (exploit).',
-                formula: '\u03C0(a|s) = (1\u2212\u03B5) if a = argmax Q(s,a), else \u03B5/(|A|\u22121)',
-                color: 'accent-blue',
-              },
-              {
-                algo: 'UCB (Bandit)',
-                type: 'Deterministic',
-                icon: '\uD83D\uDCCF',
-                desc: 'Always pick the arm with the highest upper confidence bound. No randomness — exploration comes from the bonus term.',
-                formula: '\u03C0(s) = argmax [Q(a) + c\u221A(ln(t)/N(a))]',
-                color: 'accent-green',
-              },
-              {
-                algo: 'Thompson Sampling (Bandit)',
-                type: 'Stochastic',
-                icon: '\uD83C\uDFB2',
-                desc: 'Sample from each arm\'s posterior distribution, then pick the arm with the highest sample. Randomness comes from sampling.',
-                formula: 'Sample \u03B8\u2090 ~ Beta(\u03B1\u2090, \u03B2\u2090), pick argmax \u03B8\u2090',
-                color: 'accent-yellow',
-              },
-              {
-                algo: 'Softmax / REINFORCE (CartPole, Rocket)',
-                type: 'Stochastic',
-                icon: '\uD83C\uDFB2',
-                desc: 'Compute a score for each action using a linear function of features, then convert to probabilities via softmax.',
-                formula: '\u03C0(a|s) = exp(w\u2090\u1D40\u03C6(s)) / \u03A3 exp(w\u2090\u2032\u1D40\u03C6(s))',
-                color: 'primary-light',
-              },
-            ].map(({ algo, type, icon, desc, formula, color }) => (
-              <div key={algo} className="bg-surface-light rounded-xl p-4 border border-surface-lighter">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-lg">{icon}</span>
-                  <span className={`text-sm font-bold text-${color}`}>{algo}</span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-surface-lighter text-text-muted ml-auto">{type}</span>
-                </div>
-                <p className="text-xs text-text-muted leading-relaxed mb-2">{desc}</p>
-                <p className="text-xs font-mono text-primary-light m-0">{formula}</p>
+            {/* ε-Greedy */}
+            <div className="bg-surface-light rounded-xl p-4 border border-surface-lighter">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-lg">{'\uD83C\uDFB2'}</span>
+                <span className="text-sm font-bold text-accent-blue">{'\u03B5'}-Greedy (Bandit, GridWorld)</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-surface-lighter text-text-muted ml-auto">Stochastic</span>
               </div>
-            ))}
+              <p className="text-xs text-text-muted leading-relaxed mb-3">
+                With probability {'\u03B5'}, pick a random action (explore). Otherwise, pick the action with highest Q-value (exploit).
+              </p>
+              <Eq tex="\pi(a \mid s) = \begin{cases} 1 - \varepsilon & \text{if } a = \arg\max_a Q(s,a) \\ \frac{\varepsilon}{|\mathcal{A}| - 1} & \text{otherwise} \end{cases}" />
+            </div>
+
+            {/* UCB */}
+            <div className="bg-surface-light rounded-xl p-4 border border-surface-lighter">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-lg">{'\uD83D\uDCCF'}</span>
+                <span className="text-sm font-bold text-accent-green">UCB (Bandit)</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-surface-lighter text-text-muted ml-auto">Deterministic</span>
+              </div>
+              <p className="text-xs text-text-muted leading-relaxed mb-3">
+                Always pick the arm with the highest upper confidence bound. No randomness — exploration comes from the bonus term.
+              </p>
+              <Eq tex="\pi(s) = \arg\max_a \left[ Q(a) + c \sqrt{\frac{\ln t}{N(a)}} \right]" />
+            </div>
+
+            {/* Thompson Sampling */}
+            <div className="bg-surface-light rounded-xl p-4 border border-surface-lighter">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-lg">{'\uD83C\uDFB2'}</span>
+                <span className="text-sm font-bold text-accent-yellow">Thompson Sampling (Bandit)</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-surface-lighter text-text-muted ml-auto">Stochastic</span>
+              </div>
+              <p className="text-xs text-text-muted leading-relaxed mb-3">
+                Sample from each arm's posterior distribution, then pick the arm with the highest sample. Randomness comes from sampling.
+              </p>
+              <Eq tex="\theta_a \sim \text{Beta}(\alpha_a, \beta_a) \quad \text{for each arm } a" />
+              <Eq tex="\pi(s) = \arg\max_a \; \theta_a" />
+            </div>
+
+            {/* Softmax / REINFORCE */}
+            <div className="bg-surface-light rounded-xl p-4 border border-surface-lighter">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-lg">{'\uD83C\uDFB2'}</span>
+                <span className="text-sm font-bold text-primary-light">Softmax / REINFORCE (CartPole, Rocket)</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-surface-lighter text-text-muted ml-auto">Stochastic</span>
+              </div>
+              <p className="text-xs text-text-muted leading-relaxed mb-3">
+                Compute a score for each action using a linear function of features, then convert to probabilities via softmax.
+              </p>
+              <Eq tex="\pi(a \mid s) = \frac{e^{\mathbf{w}_a^\top \phi(s)}}{\sum_{a'} e^{\mathbf{w}_{a'}^\top \phi(s)}}" />
+            </div>
           </div>
 
           <Callout type="try" title="Observe in the Labs">
-            In the <a href="#/bandit" className="text-primary-light hover:underline">Bandit lab</a>, watch how
-            {'\u03B5'}-greedy occasionally picks random arms (exploration) while Thompson Sampling explores
+            In the <a href="#/bandit" className="text-primary-light hover:underline">Bandit lab</a>, watch how {'\u03B5'}-greedy occasionally picks random arms (exploration) while Thompson Sampling explores
             more intelligently through its posterior distributions. Both are stochastic policies,
             but with very different exploration strategies.
           </Callout>

@@ -25,6 +25,8 @@ export function useThemeColors() {
       chartAxis: rgb('--color-chart-axis'),
       tooltipBg: rgb('--color-tooltip-bg'),
       tooltipBorder: rgb('--color-tooltip-border'),
+      accentGreen: rgb('--color-accent-green'),
+      accentYellow: rgb('--color-accent-yellow'),
       // Raw RGB values for alpha compositing
       rawPrimary: rawRgb('--color-primary'),
       rawText: rawRgb('--color-text'),

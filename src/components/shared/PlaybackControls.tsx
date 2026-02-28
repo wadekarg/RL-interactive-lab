@@ -8,6 +8,9 @@ interface PlaybackControlsProps {
   onReset: () => void
   maxSteps: number
   onMaxStepsChange: (n: number) => void
+  showBatch?: boolean
+  minSpeed?: number
+  maxSpeed?: number
 }
 
 const MULTIPLIER_OPTIONS = [1, 5, 10, 50] as const
@@ -17,7 +20,7 @@ function formatSteps(n: number): string {
   return String(n)
 }
 
-export function PlaybackControls({ onPlay, onPause, onStep, onReset, maxSteps, onMaxStepsChange }: PlaybackControlsProps) {
+export function PlaybackControls({ onPlay, onPause, onStep, onReset, maxSteps, onMaxStepsChange, showBatch = true, minSpeed = 10, maxSpeed = 1000 }: PlaybackControlsProps) {
   const { status, speed, setSpeed, stepsPerTick, setStepsPerTick, currentStep, totalStepCount } = useSimulationStore()
 
   const [inputValue, setInputValue] = useState(String(maxSteps))
@@ -82,36 +85,38 @@ export function PlaybackControls({ onPlay, onPause, onStep, onReset, maxSteps, o
         <label className="text-xs text-text-muted whitespace-nowrap">Speed</label>
         <input
           type="range"
-          min={10}
-          max={1000}
-          step={10}
-          value={1010 - speed}
-          onChange={(e) => setSpeed(1010 - Number(e.target.value))}
+          min={minSpeed}
+          max={maxSpeed}
+          step={minSpeed}
+          value={minSpeed + maxSpeed - speed}
+          onChange={(e) => setSpeed(minSpeed + maxSpeed - Number(e.target.value))}
           className="flex-1 accent-primary"
         />
         <span className="text-xs text-text-muted w-14 text-right">{speed}ms</span>
       </div>
 
       {/* Steps-per-tick multiplier */}
-      <div className="flex items-center gap-3">
-        <label className="text-xs text-text-muted whitespace-nowrap">Batch</label>
-        <div className="flex gap-1 flex-1">
-          {MULTIPLIER_OPTIONS.map((n) => (
-            <button
-              key={n}
-              onClick={() => setStepsPerTick(n)}
-              className={`flex-1 px-2 py-1 rounded text-xs font-medium border-0 cursor-pointer transition-colors ${
-                stepsPerTick === n
-                  ? 'bg-primary text-white'
-                  : 'bg-surface-lighter/50 text-text-muted hover:text-text hover:bg-surface-lighter'
-              }`}
-            >
-              {n === 1 ? '1x' : `${n}x`}
-            </button>
-          ))}
+      {showBatch && (
+        <div className="flex items-center gap-3">
+          <label className="text-xs text-text-muted whitespace-nowrap">Batch</label>
+          <div className="flex gap-1 flex-1">
+            {MULTIPLIER_OPTIONS.map((n) => (
+              <button
+                key={n}
+                onClick={() => setStepsPerTick(n)}
+                className={`flex-1 px-2 py-1 rounded text-xs font-medium border-0 cursor-pointer transition-colors ${
+                  stepsPerTick === n
+                    ? 'bg-primary text-white'
+                    : 'bg-surface-lighter/50 text-text-muted hover:text-text hover:bg-surface-lighter'
+                }`}
+              >
+                {n === 1 ? '1x' : `${n}x`}
+              </button>
+            ))}
+          </div>
+          <span className="text-xs text-text-muted w-14 text-right">{stepsPerTick === 1 ? 'normal' : `${stepsPerTick}/tick`}</span>
         </div>
-        <span className="text-xs text-text-muted w-14 text-right">{stepsPerTick === 1 ? 'normal' : `${stepsPerTick}/tick`}</span>
-      </div>
+      )}
 
       {/* Max steps */}
       <div className="flex items-center gap-3">
