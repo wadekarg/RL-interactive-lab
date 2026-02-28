@@ -14,7 +14,7 @@
 
 <br>
 
-### [&rarr; Try it now — no install needed &larr;](https://wadekarg.github.io/RL-interactive-lab/)
+### [🚀 Launch the Lab](https://wadekarg.github.io/RL-interactive-lab/)
 
 <br>
 
