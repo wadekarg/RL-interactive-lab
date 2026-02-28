@@ -10,13 +10,17 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 [![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](#license)
 
-[Live Demo](https://wadekarg.github.io/RL-interactive-lab/) · [Report Bug](https://github.com/wadekarg/RL-interactive-lab/issues) · [Request Feature](https://github.com/wadekarg/RL-interactive-lab/issues)
+[Report Bug](https://github.com/wadekarg/RL-interactive-lab/issues) · [Request Feature](https://github.com/wadekarg/RL-interactive-lab/issues)
+
+### [Try it now → wadekarg.github.io/RL-interactive-lab](https://wadekarg.github.io/RL-interactive-lab/)
+
+No install needed. Runs entirely in your browser.
 
 </div>
 
 ---
 
-Watch RL algorithms learn in real time. Adjust hyperparameters, step through episodes, and build intuition for how agents explore, exploit, and improve. No backend. No accounts. Just open and learn.
+Watch RL algorithms learn in real time. Adjust hyperparameters, step through episodes, and build intuition for how agents explore, exploit, and improve. No backend. No accounts. Just open the link above and start learning.
 
 <br>
 
@@ -83,24 +87,6 @@ A complete 10-chapter course built right into the app. Learn the theory, then se
 | 10 | Policy Gradients | REINFORCE, baselines, softmax policy → *CartPole & Rocket labs* |
 
 Every chapter includes interactive widgets, KaTeX-rendered equations, and direct links to the hands-on labs.
-
-<br>
-
-## Quick Start
-
-```bash
-# Clone the repository
-git clone https://github.com/wadekarg/RL-interactive-lab.git
-cd RL-interactive-lab
-
-# Install dependencies
-npm install
-
-# Start development server
-npm run dev
-```
-
-Open [http://localhost:5173](http://localhost:5173) and start experimenting.
 
 <br>
 
@@ -236,11 +222,21 @@ This project was built for learning and draws inspiration from:
 
 ## Contributing
 
-Found a bug, inaccuracy, or have a suggestion? Contributions are welcome!
+Found a bug, inaccuracy, or have a suggestion?
 
-1. [Open an issue](https://github.com/wadekarg/RL-interactive-lab/issues) describing the problem or idea
-2. Fork the repo and create a feature branch
-3. Submit a pull request
+The easiest way to help is to [open an issue](https://github.com/wadekarg/RL-interactive-lab/issues) — no code required.
+
+If you'd like to contribute code:
+
+```bash
+# Clone and set up locally
+git clone https://github.com/wadekarg/RL-interactive-lab.git
+cd RL-interactive-lab
+npm install
+npm run dev          # → http://localhost:5173
+```
+
+Then create a feature branch and submit a pull request.
 
 <br>
 
