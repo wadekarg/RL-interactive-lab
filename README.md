@@ -16,6 +16,8 @@
 
 ## [🚀 Launch the Lab](https://wadekarg.github.io/RL-interactive-lab/)
 
+`wadekarg.github.io/RL-interactive-lab`
+
 <br>
 
 ![Environments](https://img.shields.io/badge/Environments-4-blue?style=flat-square)
