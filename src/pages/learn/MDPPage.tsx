@@ -30,7 +30,7 @@ function MDPTupleWidget() {
     },
     cartpole: {
       label: 'CartPole',
-      icon: '\uD83D\uDE80',
+      icon: '\uD83C\uDFCB\uFE0F',
       S: { desc: '4D continuous state', example: '(x, v, \u03B8, \u03C9) \u2208 \u211D\u2074', size: '\u221E states' },
       A: { desc: 'Push cart left or right', example: '{Left, Right}', size: '2 actions' },
       P: { desc: 'Newtonian physics simulation', example: 'Given (x, v, \u03B8, \u03C9) and force F:\n\u03B8\u2032 = \u03B8 + \u0394t\u00B7\u03C9\n\u03C9\u2032 = \u03C9 + \u0394t\u00B7f(\u03B8, \u03C9, F)\nDeterministic dynamics', deterministic: true },
