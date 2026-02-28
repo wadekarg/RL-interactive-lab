@@ -14,7 +14,7 @@ interface UseSimulationOptions<S, A> {
  * Completely decoupled from specific algorithm or environment.
  */
 export function useSimulation<S, A>({ environment, agent, maxSteps = 5000 }: UseSimulationOptions<S, A>) {
-  const { status, speed, stepsPerTick, history, addStep, setStatus, reset: resetStore } = useSimulationStore()
+  const { status, speed, stepsPerTick, history, addStep, setStatus, setTotalStepCount, reset: resetStore } = useSimulationStore()
 
   const stateRef = useRef<S>(environment.reset())
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -46,6 +46,7 @@ export function useSimulation<S, A>({ environment, agent, maxSteps = 5000 }: Use
         done,
         values: { ...agent.getValues() },
       })
+      setTotalStepCount(stepCountRef.current)
     }
 
     if (done || stepCountRef.current >= maxSteps) {
@@ -55,7 +56,7 @@ export function useSimulation<S, A>({ environment, agent, maxSteps = 5000 }: Use
     }
 
     return done || stepCountRef.current >= maxSteps
-  }, [environment, agent, maxSteps, addStep])
+  }, [environment, agent, maxSteps, addStep, setTotalStepCount])
 
   // Run loop
   useEffect(() => {

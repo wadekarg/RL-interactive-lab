@@ -73,7 +73,7 @@ export function GridWorldPage() {
   // Grid state (user-editable)
   const [gridData, setGridData] = useState(() => createDefaultGrid(6, 6))
 
-  const { status, speed, stepsPerTick, history, addStep, setStatus, reset: resetStore, currentStep } = useSimulationStore()
+  const { status, speed, stepsPerTick, history, addStep, setStatus, setTotalStepCount, reset: resetStore, totalStepCount } = useSimulationStore()
   const isRunning = status === 'running' || status === 'paused'
 
   const environment = useMemo(() => {
@@ -137,6 +137,7 @@ export function GridWorldPage() {
         done,
         values: { ...agent.getValues() },
       })
+      setTotalStepCount(stepCountRef.current)
     }
 
     if (done) {
@@ -147,7 +148,7 @@ export function GridWorldPage() {
     }
 
     return stepCountRef.current >= maxStepsRef.current
-  }, [environment, agent, addStep])
+  }, [environment, agent, addStep, setTotalStepCount])
 
   useEffect(() => {
     if (status !== 'running') {
@@ -584,7 +585,7 @@ export function GridWorldPage() {
             <div className="flex flex-col gap-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-text-muted">Total Steps</span>
-                <span className="font-mono text-text">{currentStep}</span>
+                <span className="font-mono text-text">{totalStepCount}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-text-muted">Episodes</span>

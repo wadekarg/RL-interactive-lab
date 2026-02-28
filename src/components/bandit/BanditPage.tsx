@@ -28,6 +28,7 @@ export function BanditPage() {
   const [showIntro, setShowIntro] = useState(true)
 
   const status = useSimulationStore((s) => s.status)
+  const totalStepCount = useSimulationStore((s) => s.totalStepCount)
   const isRunning = status === 'running' || status === 'paused'
 
   const environment = useMemo(
@@ -273,7 +274,7 @@ export function BanditPage() {
             <div className="flex flex-col gap-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-text-muted">Total Steps</span>
-                <span className="font-mono text-text">{history.length}</span>
+                <span className="font-mono text-text">{totalStepCount}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-text-muted">Total Reward</span>

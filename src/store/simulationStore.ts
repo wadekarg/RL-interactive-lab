@@ -6,6 +6,7 @@ interface SimulationState {
   speed: number            // ms per step
   stepsPerTick: number     // how many env steps per timer tick (speed multiplier)
   currentStep: number
+  totalStepCount: number   // actual total env steps (including silent/batched ones)
   history: SimulationStep[]
   totalReward: number
   selectedStepIndex: number | null
@@ -15,6 +16,7 @@ interface SimulationState {
   setSpeed: (speed: number) => void
   setStepsPerTick: (n: number) => void
   addStep: (step: SimulationStep) => void
+  setTotalStepCount: (n: number) => void
   reset: () => void
   setCurrentStep: (step: number) => void
   setSelectedStepIndex: (index: number | null) => void
@@ -25,6 +27,7 @@ export const useSimulationStore = create<SimulationState>((set) => ({
   speed: 200,
   stepsPerTick: 1,
   currentStep: 0,
+  totalStepCount: 0,
   history: [],
   totalReward: 0,
   selectedStepIndex: null,
@@ -38,10 +41,12 @@ export const useSimulationStore = create<SimulationState>((set) => ({
       currentStep: state.history.length,
       totalReward: state.totalReward + step.reward,
     })),
+  setTotalStepCount: (n) => set({ totalStepCount: n }),
   reset: () =>
     set({
       status: 'idle',
       currentStep: 0,
+      totalStepCount: 0,
       history: [],
       totalReward: 0,
       selectedStepIndex: null,

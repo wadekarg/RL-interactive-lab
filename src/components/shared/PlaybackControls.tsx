@@ -18,7 +18,7 @@ function formatSteps(n: number): string {
 }
 
 export function PlaybackControls({ onPlay, onPause, onStep, onReset, maxSteps, onMaxStepsChange }: PlaybackControlsProps) {
-  const { status, speed, setSpeed, stepsPerTick, setStepsPerTick, currentStep } = useSimulationStore()
+  const { status, speed, setSpeed, stepsPerTick, setStepsPerTick, currentStep, totalStepCount } = useSimulationStore()
 
   const [inputValue, setInputValue] = useState(String(maxSteps))
   const [inputFocused, setInputFocused] = useState(false)
@@ -38,7 +38,9 @@ export function PlaybackControls({ onPlay, onPause, onStep, onReset, maxSteps, o
     <div className="flex flex-col gap-3 p-4 bg-surface-light rounded-xl border border-surface-lighter">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-text-muted uppercase tracking-wider">Controls</h3>
-        <span className="text-xs text-text-muted">Step: {currentStep}</span>
+        <span className="text-xs text-text-muted">
+          Step: {totalStepCount}{stepsPerTick > 1 && totalStepCount !== currentStep ? ` (${currentStep} displayed)` : ''}
+        </span>
       </div>
 
       <div className="flex gap-2">
