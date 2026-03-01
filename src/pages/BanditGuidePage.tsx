@@ -60,7 +60,7 @@ function Accordion({ title, number, defaultOpen, children }: {
 }
 
 function Callout({ type, title, children }: {
-  type: 'insight' | 'think' | 'try'; title?: string; children: ReactNode
+  type: 'insight' | 'think' | 'try'; title?: ReactNode; children: ReactNode
 }) {
   const styles = {
     insight: 'border-l-4 border-accent-green bg-accent-green/5',
@@ -387,7 +387,7 @@ export function BanditGuidePage() {
             </div>
           </div>
 
-          <Callout type="think" title="What if ε is too high or too low?">
+          <Callout type="think" title={<>What if <span className="normal-case">ε</span> is too high or too low?</>}>
             <p className="mb-1"><strong><Eq tex="\varepsilon = 0" inline />:</strong> Pure exploitation. Great if your first few pulls were representative. Terrible if they weren't — you'll never recover from a bad early estimate.</p>
             <p className="mb-0"><strong><Eq tex="\varepsilon = 1" inline />:</strong> Pure exploration. You'll learn every arm perfectly but waste most of your pulls on arms you already know are bad.</p>
           </Callout>
