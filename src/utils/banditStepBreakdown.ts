@@ -122,18 +122,18 @@ export function computeBanditBreakdown(
 
   if (algorithm === 'epsilon-greedy') {
     if (allZero) {
-      explorationReason = 'All estimates are 0 \u2014 any arm is equally good'
+      explorationReason = 'All estimates are {{v:0}} \u2014 any arm is equally good'
     } else if (action !== greedyArm) {
       isExploration = true
-      explorationReason = `Random pick (\u03B5=${fmt(epsilon)}) \u2014 greedy choice was Arm ${greedyArm}`
+      explorationReason = `Random pick ({{v:\u03B5=${fmt(epsilon)}}}) \u2014 greedy choice was {{arm:${greedyArm}:Arm ${greedyArm}}}`
     } else {
-      explorationReason = `Best known arm (greedy, \u03B5-exploitation)`
+      explorationReason = `Best known arm (greedy, {{v:\u03B5-exploitation}})`
     }
   } else if (algorithm === 'ucb') {
     const hasUnpulled = preCounts.some((c) => c === 0)
     if (hasUnpulled) {
       isExploration = true
-      explorationReason = `Initialization \u2014 Arm ${action} hadn't been tried yet`
+      explorationReason = `Initialization \u2014 {{arm:${action}:Arm ${action}}} hadn't been tried yet`
     } else {
       explorationReason = 'Arm with highest UCB score (estimate + exploration bonus)'
     }
@@ -300,16 +300,14 @@ export function generateBanditNarrative(bd: BanditStepBreakdown): string {
     if (!isFinite(score.ucbScore)) {
       selectionDetail = `(first pull \u2014 initialization)`
     } else {
-      selectionDetail = `(UCB score: ${fmt(score.ucbScore)})`
+      selectionDetail = `(UCB score: {{v:${fmt(score.ucbScore)}}})`
     }
   } else if (bd.algorithm === 'thompson-sampling' && bd.thompsonArms) {
     const arm = bd.thompsonArms[bd.action]
-    selectionDetail = `(Beta prior: \u03B1=${fmt(arm.preAlpha)}, \u03B2=${fmt(arm.preBeta)})`
+    selectionDetail = `(Beta prior: \u03B1={{v:${fmt(arm.preAlpha)}}}, \u03B2={{v:${fmt(arm.preBeta)}}})`
   } else {
-    selectionDetail = `(estimate: ${fmt(bd.preEstimate)})`
+    selectionDetail = `(estimate: {{v:${fmt(bd.preEstimate)}}})`
   }
 
-  const outcome = `Reward: ${rewardStr}. True mean for this arm: ${fmt(bd.arms[bd.action].trueMean)}.`
-
-  return `At step ${bd.stepIndex}, ${algoName} pulled Arm ${bd.action} ${selectionDetail}. ${bd.explorationReason}. ${outcome} Estimate updated: ${fmt(bd.preEstimate)} \u2192 ${fmt(bd.postEstimate)}.`
+  return `At step {{v:${bd.stepIndex}}}, ${algoName} pulled {{arm:${bd.action}:Arm ${bd.action}}} ${selectionDetail}. ${bd.explorationReason}. Reward: {{r:${rewardStr}}}.\nTrue mean for this arm: {{v:${fmt(bd.arms[bd.action].trueMean)}}}. Estimate updated: {{v:${fmt(bd.preEstimate)}}} \u2192 {{v:${fmt(bd.postEstimate)}}}.`
 }

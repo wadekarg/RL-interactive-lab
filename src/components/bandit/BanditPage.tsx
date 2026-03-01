@@ -26,14 +26,18 @@ export function BanditPage() {
   const [envSeed, setEnvSeed] = useState(0)
   const [maxSteps, setMaxSteps] = useState(500)
   const [showIntro, setShowIntro] = useState(true)
+  const [meansMode, setMeansMode] = useState<'random' | 'manual'>('random')
+  const [manualMeans, setManualMeans] = useState<number[]>(() => Array.from({ length: 5 }, (_, i) => [0.5, 1.0, 1.5, 0.8, 1.2][i]))
 
   const status = useSimulationStore((s) => s.status)
   const totalStepCount = useSimulationStore((s) => s.totalStepCount)
   const isRunning = status === 'running' || status === 'paused'
 
   const environment = useMemo(
-    () => new BanditEnvironment(numArms),
-    [numArms, envSeed] // eslint-disable-line react-hooks/exhaustive-deps
+    () => meansMode === 'manual'
+      ? new BanditEnvironment(numArms, manualMeans.slice(0, numArms))
+      : new BanditEnvironment(numArms),
+    [numArms, envSeed, meansMode, manualMeans] // eslint-disable-line react-hooks/exhaustive-deps
   )
 
   const agent = useMemo(() => {
@@ -118,8 +122,22 @@ export function BanditPage() {
   const handleNumArmsChange = useCallback((val: number) => {
     simReset()
     setNumArms(val)
+    setManualMeans((prev) => {
+      if (val > prev.length) {
+        return [...prev, ...Array.from({ length: val - prev.length }, () => 1.0)]
+      }
+      return prev.slice(0, val)
+    })
     setEnvSeed((s) => s + 1)
   }, [simReset])
+
+  const handleManualMeanChange = useCallback((idx: number, val: number) => {
+    setManualMeans((prev) => {
+      const next = [...prev]
+      next[idx] = val
+      return next
+    })
+  }, [])
 
   const explainer = banditAlgorithms[algorithmType]
 
@@ -312,12 +330,66 @@ export function BanditPage() {
 
           {/* True means */}
           <div className="p-4 bg-surface-light rounded-xl border border-surface-lighter">
-            <h3 className="text-sm font-semibold text-text-muted uppercase tracking-wider mb-2">
-              True Arm Means <span className="text-xs font-normal">(hidden from agent)</span>
-            </h3>
-            <p className="text-xs text-text-muted mb-2">
-              These are the actual average rewards. The agent does NOT see these — it must discover them through trial and error.
-            </p>
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-semibold text-text-muted uppercase tracking-wider">
+                True Arm Means <span className="text-xs font-normal">(hidden from agent)</span>
+              </h3>
+              <div className="flex gap-1">
+                <button
+                  onClick={() => { setMeansMode('random'); setEnvSeed((s) => s + 1) }}
+                  disabled={isRunning}
+                  className={`px-2 py-0.5 rounded text-[10px] font-medium border-0 cursor-pointer transition-colors ${
+                    meansMode === 'random'
+                      ? 'bg-primary text-white'
+                      : 'bg-surface text-text-muted hover:text-text hover:bg-surface-lighter'
+                  } disabled:opacity-40 disabled:cursor-not-allowed`}
+                >
+                  Random
+                </button>
+                <button
+                  onClick={() => setMeansMode('manual')}
+                  disabled={isRunning}
+                  className={`px-2 py-0.5 rounded text-[10px] font-medium border-0 cursor-pointer transition-colors ${
+                    meansMode === 'manual'
+                      ? 'bg-primary text-white'
+                      : 'bg-surface text-text-muted hover:text-text hover:bg-surface-lighter'
+                  } disabled:opacity-40 disabled:cursor-not-allowed`}
+                >
+                  Manual
+                </button>
+              </div>
+            </div>
+
+            {meansMode === 'manual' && (
+              <div className="mb-3">
+                <p className="text-xs text-text-muted mb-2">
+                  Set the center for each arm. Actual rewards will be drawn from N(center, 1).
+                  Press <strong>Reset</strong> to apply.
+                </p>
+                <div className="flex flex-col gap-1.5">
+                  {manualMeans.slice(0, numArms).map((val, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <span className="text-xs text-text-muted w-12">Arm {i}</span>
+                      <input
+                        type="number"
+                        step={0.1}
+                        value={val}
+                        onChange={(e) => handleManualMeanChange(i, Number(e.target.value))}
+                        disabled={isRunning}
+                        className="flex-1 px-2 py-1 rounded text-xs font-mono bg-surface text-text border border-surface-lighter focus:border-primary focus:outline-none disabled:opacity-40"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {meansMode === 'random' && (
+              <p className="text-xs text-text-muted mb-2">
+                These are the actual average rewards. The agent does NOT see these — it must discover them through trial and error.
+              </p>
+            )}
+
             <div className="flex flex-col gap-1">
               {environment.trueMeans.map((mean, i) => (
                 <div key={i} className="flex justify-between text-xs">

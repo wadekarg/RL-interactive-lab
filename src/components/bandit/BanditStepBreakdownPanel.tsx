@@ -31,6 +31,42 @@ function RenderedEquation({ tex }: { tex: string }) {
   return <div ref={ref} className="my-2 overflow-x-auto" />
 }
 
+// ─── Styled narrative parser ─────────────────────────────────────────────────
+// Tokens: {{v:text}} = bold value, {{arm:idx:text}} = arm chart color, {{r:text}} = reward (green/red)
+
+import { ARM_COLORS } from '../../utils/colors'
+
+const TOKEN_RE = /\{\{(v|arm|r):(.+?)\}\}/g
+
+function StyledNarrative({ text }: { text: string }) {
+  const parts: React.ReactNode[] = []
+  let last = 0
+  let match: RegExpExecArray | null
+  let key = 0
+
+  while ((match = TOKEN_RE.exec(text)) !== null) {
+    if (match.index > last) parts.push(text.slice(last, match.index))
+    const [, type, payload] = match
+    if (type === 'arm') {
+      // payload = "idx:display text"
+      const sep = payload.indexOf(':')
+      const idx = parseInt(payload.slice(0, sep), 10)
+      const label = payload.slice(sep + 1)
+      const color = ARM_COLORS[idx % ARM_COLORS.length]
+      parts.push(<span key={key++} className="font-semibold" style={{ color }}>{label}</span>)
+    } else if (type === 'r') {
+      const isNeg = payload.startsWith('-')
+      parts.push(<span key={key++} className={`font-semibold ${isNeg ? 'text-accent-red' : 'text-accent-green'}`}>{payload}</span>)
+    } else {
+      parts.push(<span key={key++} className="font-semibold text-text">{payload}</span>)
+    }
+    last = match.index + match[0].length
+  }
+  if (last < text.length) parts.push(text.slice(last))
+
+  return <>{parts}</>
+}
+
 // ─── Props ───────────────────────────────────────────────────────────────────
 
 interface BanditStepBreakdownPanelProps {
@@ -87,6 +123,17 @@ export function BanditStepBreakdownPanel({
     if (history.length === 0 || effectiveIndex < 0) return null
     return computeBanditBreakdown(history, effectiveIndex, algorithmType, trueMeans, epsilon, confidence)
   }, [history, effectiveIndex, algorithmType, trueMeans, epsilon, confidence])
+
+  // Reward stats for this step
+  const rewardStats = useMemo(() => {
+    if (history.length === 0 || effectiveIndex < 0) return null
+    const stepReward = history[effectiveIndex].reward
+    let cumulative = 0
+    for (let i = 0; i <= effectiveIndex; i++) cumulative += history[i].reward
+    let total = cumulative
+    for (let i = effectiveIndex + 1; i < history.length; i++) total += history[i].reward
+    return { stepReward, cumulative, total }
+  }, [history, effectiveIndex])
 
   if (history.length === 0) {
     return (
@@ -180,7 +227,7 @@ export function BanditStepBreakdownPanel({
             />
           </div>
 
-          {breakdown && <BreakdownContent bd={breakdown} />}
+          {breakdown && <BreakdownContent bd={breakdown} rewardStats={rewardStats} />}
         </div>
       )}
     </div>
@@ -189,9 +236,21 @@ export function BanditStepBreakdownPanel({
 
 // ─── Breakdown Content ───────────────────────────────────────────────────────
 
-function BreakdownContent({ bd }: { bd: BanditStepBreakdown }) {
+interface RewardStats {
+  stepReward: number
+  cumulative: number
+  total: number
+}
+
+function BreakdownContent({ bd, rewardStats }: { bd: BanditStepBreakdown; rewardStats: RewardStats | null }) {
   const formula = useMemo(() => generateBanditFormula(bd), [bd])
   const narrative = useMemo(() => generateBanditNarrative(bd), [bd])
+
+  const rewardTex = useMemo(() => {
+    if (!rewardStats) return ''
+    const t = bd.stepIndex
+    return `r_{${t}} = ${fmt(rewardStats.stepReward)}, \\qquad G_{${t}} = \\sum_{i=0}^{${t}} r_i = ${fmt(rewardStats.cumulative)}`
+  }, [bd.stepIndex, rewardStats])
 
   const algoLabel =
     bd.algorithm === 'epsilon-greedy' ? '\u03B5-Greedy'
@@ -202,7 +261,11 @@ function BreakdownContent({ bd }: { bd: BanditStepBreakdown }) {
     <div className="flex flex-col gap-4">
       {/* Narrative */}
       <div className="bg-surface rounded-lg p-3">
-        <p className="text-sm text-text leading-relaxed">{narrative}</p>
+        {narrative.split('\n').map((line, i) => (
+          <p key={i} className="text-sm text-text-muted leading-relaxed">
+            <StyledNarrative text={line} />
+          </p>
+        ))}
       </div>
 
       {/* Formula */}
@@ -212,6 +275,12 @@ function BreakdownContent({ bd }: { bd: BanditStepBreakdown }) {
         </h4>
         <div className="bg-surface rounded-lg p-3 overflow-x-auto">
           <RenderedEquation tex={formula} />
+          {rewardTex && (
+            <>
+              <div className="border-t border-surface-lighter my-2" />
+              <RenderedEquation tex={rewardTex} />
+            </>
+          )}
         </div>
       </div>
 
