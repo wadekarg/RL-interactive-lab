@@ -421,8 +421,7 @@ export function BanditGuidePage() {
           </div>
 
           <Callout type="insight">
-            The <strong>exploration bonus shrinks</strong> as you pull an arm more (<Eq tex="N_t(a)" inline /> gets larger),
-            but grows slowly as total time passes (<Eq tex="\ln t" inline /> grows). This means an arm you
+            The <strong>exploration bonus shrinks</strong> as you pull an arm more — <Eq tex="N_t(a)" inline /> gets larger — but grows slowly as total time passes — <Eq tex="\ln t" inline /> grows. This means an arm you
             haven't tried in a while gradually becomes more appealing again — UCB never <em>completely</em> writes off any arm.
           </Callout>
 
