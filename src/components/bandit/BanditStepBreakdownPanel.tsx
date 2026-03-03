@@ -4,6 +4,9 @@ import { useSimulationStore } from '../../store/simulationStore'
 import {
   computeBanditBreakdown,
   generateBanditFormula,
+  generateQUpdateFormula,
+  generateUCBBeforeFormula,
+  generateUCBAfterFormula,
   generateBanditNarrative,
   fmt,
 } from '../../utils/banditStepBreakdown'
@@ -243,19 +246,30 @@ interface RewardStats {
 }
 
 function BreakdownContent({ bd, rewardStats }: { bd: BanditStepBreakdown; rewardStats: RewardStats | null }) {
-  const formula = useMemo(() => generateBanditFormula(bd), [bd])
-  const narrative = useMemo(() => generateBanditNarrative(bd), [bd])
+  const formula     = useMemo(() => generateBanditFormula(bd), [bd])
+  const qUpdate     = useMemo(() => generateQUpdateFormula(bd), [bd])
+  const ucbBefore   = useMemo(() => generateUCBBeforeFormula(bd), [bd])
+  const ucbAfter    = useMemo(() => generateUCBAfterFormula(bd), [bd])
+  const narrative   = useMemo(() => generateBanditNarrative(bd), [bd])
 
   const rewardTex = useMemo(() => {
     if (!rewardStats) return ''
     const t = bd.stepIndex
-    return `r_{${t}} = ${fmt(rewardStats.stepReward)}, \\qquad G_{${t}} = \\sum_{i=0}^{${t}} r_i = ${fmt(rewardStats.cumulative)}`
+    return `r_{${t}} = ${fmt(rewardStats.stepReward)}`
+  }, [bd.stepIndex, rewardStats])
+
+  const cumulativeTex = useMemo(() => {
+    if (!rewardStats) return ''
+    const t = bd.stepIndex
+    return `G_{${t}} = \\sum_{i=0}^{${t}} r_i = ${fmt(rewardStats.cumulative)}`
   }, [bd.stepIndex, rewardStats])
 
   const algoLabel =
     bd.algorithm === 'epsilon-greedy' ? '\u03B5-Greedy'
     : bd.algorithm === 'ucb' ? 'UCB'
     : 'Thompson Sampling'
+
+  const isUCB = bd.algorithm === 'ucb'
 
   return (
     <div className="flex flex-col gap-4">
@@ -268,21 +282,82 @@ function BreakdownContent({ bd, rewardStats }: { bd: BanditStepBreakdown; reward
         ))}
       </div>
 
-      {/* Formula */}
-      <div>
-        <h4 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2">
-          {algoLabel} Update
-        </h4>
-        <div className="bg-surface rounded-lg p-3 overflow-x-auto">
-          <RenderedEquation tex={formula} />
-          {rewardTex && (
-            <>
-              <div className="border-t border-surface-lighter my-2" />
-              <RenderedEquation tex={rewardTex} />
-            </>
-          )}
+      {isUCB ? (
+        <>
+          {/* Row 1: Q Update | Reward + Cumulative side by side */}
+          <div>
+            <h4 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2">
+              UCB Update
+            </h4>
+            <div className="bg-surface rounded-lg">
+              <div className="flex">
+                <div className="flex-1 min-w-0 p-3">
+                  <p className="text-xs font-semibold text-text-muted mb-1">Q(a) Update</p>
+                  <RenderedEquation tex={qUpdate} />
+                </div>
+                <div className="w-px bg-surface-lighter flex-shrink-0" />
+                <div className="flex-1 min-w-0 p-3">
+                  <p className="text-xs font-semibold text-text-muted mb-1">Reward</p>
+                  <RenderedEquation tex={rewardTex} />
+                  <RenderedEquation tex={cumulativeTex} />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Row 2: UCB Before | UCB After side by side */}
+          <div>
+            <h4 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2">
+              UCB Score
+            </h4>
+            <div className="bg-surface rounded-lg">
+              <div className="flex">
+                <div className="flex-1 min-w-0 p-3">
+                  <p className="text-xs font-semibold text-text-muted mb-0.5">Before Pull</p>
+                  <p className="text-xs text-text-muted opacity-60 mb-1">
+                    {bd.stepIndex === 0
+                      ? 'Step 0 — no previous step, initial state'
+                      : (() => {
+                          const sel = bd.ucbArms![bd.action]
+                          const score = isFinite(sel.ucbScore) ? fmt(sel.ucbScore) : '∞'
+                          return `From step ${bd.stepIndex - 1} — Arm ${bd.action} had the highest UCB score (${score}), so it was selected`
+                        })()
+                    }
+                  </p>
+                  <RenderedEquation tex={ucbBefore} />
+                  {bd.ucbArms && bd.ucbArms[bd.action].prePulls === 0 && (
+                    <p className="text-xs text-text-muted mt-1">
+                      N(a) = 0 — this arm has never been pulled. UCB = ∞ guarantees it is selected first (forced exploration).
+                    </p>
+                  )}
+                </div>
+                <div className="w-px bg-surface-lighter flex-shrink-0" />
+                <div className="flex-1 min-w-0 p-3">
+                  <p className="text-xs font-semibold text-text-muted mb-0.5">After Pull</p>
+                  <p className="text-xs text-text-muted opacity-60 mb-1">updated this step — carries into next</p>
+                  <RenderedEquation tex={ucbAfter} />
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      ) : (
+        /* Non-UCB: original layout */
+        <div>
+          <h4 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2">
+            {algoLabel} Update
+          </h4>
+          <div className="bg-surface rounded-lg p-3 overflow-x-auto">
+            <RenderedEquation tex={formula} />
+            {rewardTex && (
+              <>
+                <div className="border-t border-surface-lighter my-2" />
+                <RenderedEquation tex={`${rewardTex}, \\qquad ${cumulativeTex}`} />
+              </>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Arm table — algorithm-specific */}
       {bd.algorithm === 'ucb' && bd.ucbArms
@@ -353,9 +428,12 @@ function BaseArmTable({ arms, action: _action }: { arms: BanditArmSnapshot[]; ac
 function UCBArmTable({ arms, action: _action }: { arms: UCBArmSnapshot[]; action: number }) {
   return (
     <div>
-      <h4 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2">
+      <h4 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-1">
         All Arms &mdash; UCB Scores (before pull)
       </h4>
+      <p className="text-xs text-text-muted mb-2">
+        UCB scores are recomputed for <span className="font-semibold text-text">every arm</span> at every step — not just the one pulled.
+      </p>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>

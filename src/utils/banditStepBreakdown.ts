@@ -28,6 +28,8 @@ export interface BanditArmSnapshot {
 export interface UCBArmSnapshot extends BanditArmSnapshot {
   ucbBonus: number
   ucbScore: number
+  ucbBonusAfter: number
+  ucbScoreAfter: number
 }
 
 /** Thompson-specific extras per arm */
@@ -159,14 +161,20 @@ export function computeBanditBreakdown(
   let ucbArms: UCBArmSnapshot[] | null = null
   if (algorithm === 'ucb') {
     const t = Math.max(totalStepsBefore, 1)
+    const tAfter = totalStepsBefore + 1
     ucbArms = arms.map((a) => {
       const bonus = a.prePulls > 0
         ? confidence * Math.sqrt(Math.log(t) / a.prePulls)
+        : Infinity
+      const bonusAfter = a.postPulls > 0
+        ? confidence * Math.sqrt(Math.log(tAfter) / a.postPulls)
         : Infinity
       return {
         ...a,
         ucbBonus: bonus,
         ucbScore: a.prePulls > 0 ? a.preEstimate + bonus : Infinity,
+        ucbBonusAfter: bonusAfter,
+        ucbScoreAfter: a.postEstimate + bonusAfter,
       }
     })
   }
@@ -213,6 +221,63 @@ export function computeBanditBreakdown(
 
 // ─── KaTeX Formula Generation ────────────────────────────────────────────────
 
+export function generateQUpdateFormula(bd: BanditStepBreakdown): string {
+  const a = bd.action
+  const r = bd.reward
+  const preQ = bd.preEstimate
+  const postQ = bd.postEstimate
+  const N = bd.postPulls
+  const delta = r - preQ
+  const step = delta / N
+
+  const lines = [
+    `Q(\\text{Arm ${a}}) &\\leftarrow Q(\\text{Arm ${a}}) + \\frac{r - Q(\\text{Arm ${a}})}{N(\\text{Arm ${a}})}`,
+    `&= ${fmt(preQ)} + \\frac{${fmt(r)} - ${fmt(preQ)}}{${N}}`,
+    `&= ${fmt(preQ)} + \\frac{${fmt(delta)}}{${N}}`,
+    `&= ${fmt(preQ)} + ${fmt(step)}`,
+    `&= \\boxed{${fmt(postQ)}}`,
+  ]
+  return `\\begin{aligned}\n${lines.join(' \\\\\n')}\n\\end{aligned}`
+}
+
+export function generateUCBBeforeFormula(bd: BanditStepBreakdown): string {
+  if (!bd.ucbArms) return ''
+  const a = bd.action
+  const sel = bd.ucbArms[a]
+
+  if (sel.prePulls === 0) {
+    const t = bd.totalStepsBefore
+    const lines = [
+      `\\text{UCB}(\\text{Arm ${a}}) &= Q(a) + c\\sqrt{\\frac{\\ln t}{N(a)}}`,
+      `&= Q(a) + c\\sqrt{\\frac{\\ln ${t}}{0}} = \\infty`,
+    ]
+    return `\\begin{aligned}\n${lines.join(' \\\\\n')}\n\\end{aligned}`
+  }
+
+  const lines = [
+    `\\text{UCB}(\\text{Arm ${a}}) &= Q(a) + c\\sqrt{\\frac{\\ln t}{N(a)}}`,
+    `&= ${fmt(sel.preEstimate)} + ${fmt(bd.confidence)} \\times \\sqrt{\\frac{\\ln ${bd.totalStepsBefore}}{${sel.prePulls}}}`,
+    `&= ${fmt(sel.preEstimate)} + ${fmt(sel.ucbBonus)}`,
+    `&= \\boxed{${fmt(sel.ucbScore)}}`,
+  ]
+  return `\\begin{aligned}\n${lines.join(' \\\\\n')}\n\\end{aligned}`
+}
+
+export function generateUCBAfterFormula(bd: BanditStepBreakdown): string {
+  if (!bd.ucbArms) return ''
+  const a = bd.action
+  const sel = bd.ucbArms[a]
+  const tAfter = bd.totalStepsBefore + 1
+
+  const lines = [
+    `\\text{UCB}(\\text{Arm ${a}}) &= Q'(a) + c\\sqrt{\\frac{\\ln t'}{N'(a)}}`,
+    `&= ${fmt(sel.postEstimate)} + ${fmt(bd.confidence)} \\times \\sqrt{\\frac{\\ln ${tAfter}}{${sel.postPulls}}}`,
+    `&= ${fmt(sel.postEstimate)} + ${fmt(sel.ucbBonusAfter)}`,
+    `&= \\boxed{${fmt(sel.ucbScoreAfter)}}`,
+  ]
+  return `\\begin{aligned}\n${lines.join(' \\\\\n')}\n\\end{aligned}`
+}
+
 export function generateBanditFormula(bd: BanditStepBreakdown): string {
   const a = bd.action
   const r = bd.reward
@@ -235,14 +300,38 @@ export function generateBanditFormula(bd: BanditStepBreakdown): string {
 
     if (bd.algorithm === 'ucb' && bd.ucbArms) {
       const selected = bd.ucbArms[a]
+      const tAfter = bd.totalStepsBefore + 1
       if (selected.prePulls > 0 && isFinite(selected.ucbBonus)) {
         const ucbLines = [
           ``,
-          `\\text{UCB score (before pull):}`,
+          `\\text{UCB before pull:}`,
           `\\text{UCB}(\\text{Arm ${a}}) &= Q(a) + c\\sqrt{\\frac{\\ln t}{N(a)}}`,
           `&= ${fmt(selected.preEstimate)} + ${fmt(bd.confidence)} \\times \\sqrt{\\frac{\\ln ${bd.totalStepsBefore}}{${selected.prePulls}}}`,
           `&= ${fmt(selected.preEstimate)} + ${fmt(selected.ucbBonus)}`,
-          `&= ${fmt(selected.ucbScore)}`,
+          `&= \\boxed{${fmt(selected.ucbScore)}}`,
+          ``,
+          `\\text{UCB after pull:}`,
+          `\\text{UCB}(\\text{Arm ${a}}) &= Q'(a) + c\\sqrt{\\frac{\\ln t'}{N'(a)}}`,
+          `&= ${fmt(selected.postEstimate)} + ${fmt(bd.confidence)} \\times \\sqrt{\\frac{\\ln ${tAfter}}{${selected.postPulls}}}`,
+          `&= ${fmt(selected.postEstimate)} + ${fmt(selected.ucbBonusAfter)}`,
+          `&= \\boxed{${fmt(selected.ucbScoreAfter)}}`,
+        ]
+        lines.push(...ucbLines)
+      } else if (selected.prePulls === 0) {
+        const ucbLines = [
+          ``,
+          `\\text{UCB before pull:}`,
+          `\\text{UCB}(\\text{Arm ${a}}) &= Q(a) + c\\sqrt{\\frac{\\ln t}{N(a)}}`,
+          `&= Q(a) + c\\sqrt{\\frac{\\ln t}{0}} = \\infty`,
+          `\\text{} &`,
+          `\\text{N(Arm ${a}) = 0 — never pulled yet.}`,
+          `\\text{UCB} = \\infty \\text{ guarantees this arm is selected first.}`,
+          ``,
+          `\\text{UCB after pull:}`,
+          `\\text{UCB}(\\text{Arm ${a}}) &= Q'(a) + c\\sqrt{\\frac{\\ln t'}{N'(a)}}`,
+          `&= ${fmt(selected.postEstimate)} + ${fmt(bd.confidence)} \\times \\sqrt{\\frac{\\ln ${tAfter}}{${selected.postPulls}}}`,
+          `&= ${fmt(selected.postEstimate)} + ${fmt(selected.ucbBonusAfter)}`,
+          `&= \\boxed{${fmt(selected.ucbScoreAfter)}}`,
         ]
         lines.push(...ucbLines)
       }
