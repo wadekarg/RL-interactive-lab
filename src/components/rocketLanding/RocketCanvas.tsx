@@ -251,7 +251,7 @@ export function RocketCanvas({ state, action, done, landingResult, episode, step
     <div ref={containerRef} className="bg-surface-light rounded-xl border border-surface-lighter p-4">
       <canvas
         ref={canvasRef}
-        style={{ display: 'block', margin: '0 auto', maxWidth: '100%' }}
+        style={{ display: 'block', margin: '0 auto', maxWidth: '100%', height: 'auto' }}
       />
     </div>
   )

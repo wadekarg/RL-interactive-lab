@@ -23,9 +23,9 @@ import { PolicyGradientsPage } from './pages/learn/PolicyGradientsPage'
 
 function App() {
   return (
-    <div className="min-h-screen bg-surface">
+    <div className="min-h-screen bg-surface overflow-x-hidden">
       <Navbar />
-      <main className="pt-14">
+      <main className="pt-14 overflow-x-hidden">
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/learn" element={<LearnPage />} />

@@ -33,16 +33,16 @@ const labs = [
 
 export function HomePage() {
   return (
-    <div className="max-w-4xl mx-auto px-6 py-16">
-      <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold text-text mb-3">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+      <div className="text-center mb-10 sm:mb-12">
+        <h1 className="text-3xl sm:text-4xl font-bold text-text mb-3">
           <span className="text-primary-light">RL</span> Interactive Lab
         </h1>
-        <p className="text-lg text-text-muted max-w-2xl mx-auto mb-4">
+        <p className="text-base sm:text-lg text-text-muted max-w-2xl mx-auto mb-4">
           An interactive playground to learn reinforcement learning algorithms step-by-step.
           Adjust hyperparameters, watch agents learn in real time, and build intuition.
         </p>
-        <div className="flex justify-center gap-4 text-xs text-text-muted">
+        <div className="flex flex-wrap justify-center gap-2 sm:gap-4 text-xs text-text-muted">
           <span className="bg-surface-light px-3 py-1 rounded-full">13 algorithms</span>
           <span className="bg-surface-light px-3 py-1 rounded-full">Interactive controls</span>
           <span className="bg-surface-light px-3 py-1 rounded-full">No backend needed</span>
@@ -55,10 +55,10 @@ export function HomePage() {
         to="/learn"
         className="group block p-6 bg-primary/10 rounded-xl border border-primary/30 no-underline transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 mb-8"
       >
-        <div className="flex items-center gap-4">
-          <span className="text-4xl">{'\uD83D\uDCDA'}</span>
-          <div className="flex-1">
-            <h2 className="text-xl font-bold text-primary-light group-hover:text-primary transition-colors">
+        <div className="flex items-center gap-3 sm:gap-4">
+          <span className="text-3xl sm:text-4xl flex-shrink-0">{'\uD83D\uDCDA'}</span>
+          <div className="flex-1 min-w-0">
+            <h2 className="text-lg sm:text-xl font-bold text-primary-light group-hover:text-primary transition-colors">
               New to RL? Start Here
             </h2>
             <p className="text-sm text-text-muted mt-1">
@@ -66,7 +66,7 @@ export function HomePage() {
               Learn the theory, then see it in action in the labs.
             </p>
           </div>
-          <span className="text-primary-light text-2xl">&rarr;</span>
+          <span className="text-primary-light text-xl sm:text-2xl flex-shrink-0">&rarr;</span>
         </div>
       </Link>
 
