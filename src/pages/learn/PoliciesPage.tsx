@@ -145,6 +145,9 @@ function StochasticPolicyWidget() {
   const actions = ['Up', 'Down', 'Left', 'Right']
   const arrows = ['\u2191', '\u2193', '\u2190', '\u2192']
   const colors = ['accent-blue', 'accent-red', 'accent-yellow', 'accent-green']
+  const barClasses = ['bg-accent-blue/30', 'bg-accent-red/30', 'bg-accent-yellow/30', 'bg-accent-green/30']
+  const badgeBgClasses = ['bg-accent-blue/20', 'bg-accent-red/20', 'bg-accent-yellow/20', 'bg-accent-green/20']
+  const badgeTextClasses = ['text-accent-blue', 'text-accent-red', 'text-accent-yellow', 'text-accent-green']
 
   const [samples, setSamples] = useState<number[]>([])
 
@@ -204,7 +207,7 @@ function StochasticPolicyWidget() {
             {/* Bar */}
             <div className="w-full h-20 bg-surface-light rounded-lg flex items-end justify-center mb-1 relative">
               <div
-                className={`w-full rounded-lg bg-${colors[i]}/30 transition-all duration-200`}
+                className={`w-full rounded-lg ${barClasses[i]} transition-all duration-200`}
                 style={{ height: `${maxProb > 0 ? (p / maxProb) * 100 : 0}%`, minHeight: p > 0 ? 4 : 0 }}
               />
               <span className="absolute top-1 text-xs font-bold text-text">{arrows[i]}</span>
@@ -251,7 +254,7 @@ function StochasticPolicyWidget() {
           <span className="text-xs text-text-muted">Sampled actions: </span>
           <div className="flex gap-1 flex-wrap mt-1">
             {samples.map((s, i) => (
-              <span key={i} className={`text-sm px-1.5 py-0.5 rounded bg-${colors[s]}/20 text-${colors[s]}`}>
+              <span key={i} className={`text-sm px-1.5 py-0.5 rounded ${badgeBgClasses[s]} ${badgeTextClasses[s]}`}>
                 {arrows[s]}
               </span>
             ))}
