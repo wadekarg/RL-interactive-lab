@@ -290,8 +290,8 @@ function TransitionDiagramWidget() {
       </p>
 
       <div className="flex items-start gap-6 flex-wrap">
-        {/* State diagram */}
-        <div className="flex flex-col gap-2">
+        {/* State diagram — 2×2 grid mirrors the actual MDP topology */}
+        <div className="grid grid-cols-2 gap-2">
           {['S1', 'S2', 'S3', 'Goal'].map((s) => (
             <div
               key={s}
