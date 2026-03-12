@@ -144,7 +144,6 @@ function StochasticPolicyWidget() {
   const [probs, setProbs] = useState([0.1, 0.1, 0.3, 0.5]) // up, down, left, right
   const actions = ['Up', 'Down', 'Left', 'Right']
   const arrows = ['\u2191', '\u2193', '\u2190', '\u2192']
-  const colors = ['accent-blue', 'accent-red', 'accent-yellow', 'accent-green']
   const barClasses = ['bg-accent-blue/30', 'bg-accent-red/30', 'bg-accent-yellow/30', 'bg-accent-green/30']
   const badgeBgClasses = ['bg-accent-blue/20', 'bg-accent-red/20', 'bg-accent-yellow/20', 'bg-accent-green/20']
   const badgeTextClasses = ['text-accent-blue', 'text-accent-red', 'text-accent-yellow', 'text-accent-green']
