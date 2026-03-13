@@ -197,7 +197,7 @@ export function ClassicCartPolePage() {
 
       {/* ===== STORY & INTRO ===== */}
       <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
           <div>
             <h1 className="text-3xl font-bold text-text">
               <img src={`${import.meta.env.BASE_URL}cartpole.png`} alt="" className="inline-block w-10 h-10 mr-2 align-middle" /> {classicCartpoleIntro.title}
@@ -206,7 +206,7 @@ export function ClassicCartPolePage() {
               The classic RL benchmark {'\u2014'} keep the pole balanced
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-shrink-0">
             <Link
               to="/cartpole-guide"
               className="text-xs font-medium text-primary-light hover:text-primary bg-primary/10 px-3 py-1.5 rounded-lg border border-primary/20 no-underline hover:bg-primary/20 transition-colors"
@@ -386,8 +386,8 @@ export function ClassicCartPolePage() {
       </div>
 
       {/* ===== MAIN LAYOUT ===== */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div className="lg:col-span-3 flex flex-col gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+        <div className="md:col-span-4 lg:col-span-3 flex flex-col gap-4">
           <PlaybackControls
             onPlay={play}
             onPause={pause}
@@ -494,7 +494,7 @@ export function ClassicCartPolePage() {
           </div>
         </div>
 
-        <div className="lg:col-span-9 flex flex-col gap-4">
+        <div className="md:col-span-8 lg:col-span-9 flex flex-col gap-4">
           <TestStandCanvas
             state={currentCartState}
             action={lastActionRef.current}

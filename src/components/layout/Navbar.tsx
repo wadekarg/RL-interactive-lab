@@ -45,8 +45,8 @@ export function Navbar() {
             <span className="sm:hidden">RL Lab</span>
           </Link>
 
-          {/* Desktop nav links — hidden on mobile */}
-          <div className="hidden md:flex items-center gap-1">
+          {/* Desktop nav links — hidden on mobile/tablet, visible from lg up */}
+          <div className="hidden lg:flex items-center gap-1">
             {navItems.map(({ path, label }) => {
               const isActive = path === '/learn'
                 ? location.pathname.startsWith('/learn')
@@ -81,10 +81,10 @@ export function Navbar() {
               <span className="hidden sm:inline text-xs">{meta.label}</span>
             </button>
 
-            {/* Hamburger — visible only on mobile */}
+            {/* Hamburger — visible on mobile and tablet, hidden from lg up */}
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              className="md:hidden flex flex-col justify-center items-center w-9 h-9 rounded-lg
+              className="lg:hidden flex flex-col justify-center items-center w-9 h-9 rounded-lg
                          bg-surface-lighter/50 hover:bg-surface-lighter border-0 cursor-pointer transition-colors gap-1.5"
               aria-label="Toggle menu"
             >
@@ -96,9 +96,9 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* Mobile dropdown menu */}
+      {/* Mobile/tablet dropdown menu */}
       {menuOpen && (
-        <div className="md:hidden border-t border-surface-lighter bg-surface-light/95 backdrop-blur-md">
+        <div className="lg:hidden border-t border-surface-lighter bg-surface-light/95 backdrop-blur-md">
           <div className="px-4 py-3 flex flex-col gap-1">
             {navItems.map(({ path, label }) => {
               const isActive = path === '/learn'
