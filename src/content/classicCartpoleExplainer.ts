@@ -87,11 +87,11 @@ export const classicCartpoleAlgorithms = {
 }
 
 export const classicCartpoleParamExplanations: Record<string, string> = {
-  alpha: 'Learning rate \u2014 how much Q-values shift after each step. Try 0.1 to start.',
+  alpha: 'Initial learning rate \u2014 decays automatically to 0.001 over training so Q-values stabilise once a good policy is found. 0.5 is the optimal starting value.',
   gamma: 'Discount factor \u2014 how much the agent values future balance vs. the current moment. High \u03B3 (0.99) = plan ahead.',
-  epsilon: 'Exploration rate \u2014 how often the agent pushes randomly instead of using its best estimate. Needed for discovery but hurts performance.',
+  epsilon: 'Initial exploration rate \u2014 starts at 1.0 (fully random) and decays each episode. Needed for discovery early in training.',
   bins: 'Number of bins per state dimension (4 dimensions). More bins = finer control but more states. Fewer bins = faster but coarser.',
-  lr: 'Policy learning rate \u2014 how quickly the policy weights update. Too high = unstable. Too low = slow. Try 0.01.',
-  epsilonDecay: 'After each episode, \u03B5 is multiplied by this factor. At 0.995, \u03B5 halves roughly every 140 episodes. Set to 1.0 to disable decay.',
-  epsilonMin: 'The floor for \u03B5 \u2014 exploration never drops below this. Prevents the agent from becoming fully greedy.',
+  lr: 'Policy learning rate \u2014 how quickly the policy weights update. Too high = unstable. Too low = slow. 0.002 is the optimal value.',
+  epsilonDecay: 'After each episode, \u03B5 is multiplied by this factor. At 0.9985, \u03B5 reaches its minimum around episode 2600. Set to 1.0 to disable decay.',
+  epsilonMin: 'The floor for \u03B5 \u2014 exploration never drops below this. 0.02 balances continued exploration with stable exploitation.',
 }

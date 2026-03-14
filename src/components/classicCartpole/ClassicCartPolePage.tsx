@@ -299,7 +299,7 @@ export function ClassicCartPolePage() {
             <>
               <div>
                 <div className="flex justify-between text-sm mb-1">
-                  <label className="text-text">{'\u03B1'} Learning Rate</label>
+                  <label className="text-text">{'\u03B1'} Initial Learning Rate</label>
                   <span className="font-mono text-primary-light">{alpha}</span>
                 </div>
                 <input type="range" min={0.01} max={1} step={0.01} value={alpha}
