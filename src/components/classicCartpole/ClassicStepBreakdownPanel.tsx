@@ -8,7 +8,6 @@ import {
   computeClassicReinforceBreakdown,
   computeClassicRandomBreakdown,
   computeClassicDQNBreakdown,
-  computeClassicNeuralReinforceBreakdown,
   computeClassicA2CBreakdown,
   generateClassicTDFormula,
   generateClassicReinforceFormula,
@@ -23,7 +22,6 @@ import type {
   ClassicReinforceBreakdown,
   ClassicRandomBreakdown,
   ClassicDQNBreakdown,
-  ClassicNeuralReinforceBreakdown,
   ClassicA2CBreakdown,
 } from '../../utils/classicCartpoleStepBreakdown'
 
@@ -75,13 +73,13 @@ export function ClassicStepBreakdownPanel({ algorithmType, alpha, gamma, discret
       return computeClassicTDBreakdown(history, effectiveIndex, alpha, gamma, discretizationConfig)
     }
     if (algorithmType === 'reinforce') {
-      return computeClassicReinforceBreakdown(history, effectiveIndex)
+      return computeClassicReinforceBreakdown(history, effectiveIndex, false)
     }
     if (algorithmType === 'dqn') {
       return computeClassicDQNBreakdown(history, effectiveIndex)
     }
     if (algorithmType === 'neural-reinforce') {
-      return computeClassicNeuralReinforceBreakdown(history, effectiveIndex)
+      return computeClassicReinforceBreakdown(history, effectiveIndex, true)
     }
     if (algorithmType === 'a2c') {
       return computeClassicA2CBreakdown(history, effectiveIndex)
@@ -206,7 +204,6 @@ export function ClassicStepBreakdownPanel({ algorithmType, alpha, gamma, discret
           {breakdown && breakdown.type === 'classic-reinforce' && <ReinforceView bd={breakdown} />}
           {breakdown && breakdown.type === 'classic-random' && <RandomView bd={breakdown} />}
           {breakdown && breakdown.type === 'classic-dqn' && <DQNView bd={breakdown} />}
-          {breakdown && breakdown.type === 'classic-neural-reinforce' && <NeuralReinforceView bd={breakdown} />}
           {breakdown && breakdown.type === 'classic-a2c' && <A2CView bd={breakdown} />}
         </div>
       )}
@@ -290,6 +287,7 @@ function TDView({ bd }: { bd: ClassicTDBreakdown }) {
 
 // ─── REINFORCE View ─────────────────────────────────────────────────────────
 
+// Handles both linear (bd.isNeural=false) and neural (bd.isNeural=true) REINFORCE
 function ReinforceView({ bd }: { bd: ClassicReinforceBreakdown }) {
   const formula = useMemo(() => generateClassicReinforceFormula(), [])
   const narrative = useMemo(() => generateClassicReinforceNarrative(bd), [bd])
@@ -303,11 +301,12 @@ function ReinforceView({ bd }: { bd: ClassicReinforceBreakdown }) {
       {/* Policy probabilities */}
       <div>
         <h4 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2">
-          Current Policy {'\u03C0'}(a|s)
+          Policy {'\u03C0'}(a|s){bd.isNeural ? ' — Neural Network' : ''}
         </h4>
         <p className="text-xs text-text-muted mb-2">
-          The probability the policy assigns to each action in this state.
-          Unlike Q-Learning, REINFORCE learns a policy directly — no Q-table needed.
+          {bd.isNeural
+            ? 'Probabilities from 4→128→2 network with ReLU hidden layer and softmax output. Can represent non-linear policies.'
+            : 'The probability the policy assigns to each action. REINFORCE learns a policy directly — no Q-table needed.'}
         </p>
         <div className="flex gap-2">
           {([0, 1] as const).map((a) => {
@@ -327,23 +326,25 @@ function ReinforceView({ bd }: { bd: ClassicReinforceBreakdown }) {
         </div>
       </div>
 
-      {/* Feature vector */}
-      <div>
-        <h4 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2">
-          Feature Vector {'\u03C6'}(s)
-        </h4>
-        <p className="text-xs text-text-muted mb-2">
-          The state is encoded into 7 features. The policy uses W{'\u00B7'}{'\u03C6'}(s) to compute logits, then softmax to get probabilities.
-        </p>
-        <div className="flex flex-wrap gap-1.5">
-          {bd.features.map((val, i) => (
-            <div key={i} className="bg-surface rounded px-2 py-1 text-xs">
-              <span className="text-text-muted">{bd.featureLabels[i]}: </span>
-              <span className="font-mono text-text">{fmt(val)}</span>
-            </div>
-          ))}
+      {/* Feature vector — linear only */}
+      {!bd.isNeural && bd.features && bd.featureLabels && (
+        <div>
+          <h4 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2">
+            Feature Vector {'\u03C6'}(s)
+          </h4>
+          <p className="text-xs text-text-muted mb-2">
+            7 hand-crafted features from the 4D state. The linear policy uses W{'\u00B7'}{'\u03C6'}(s) to compute logits.
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {bd.features.map((val, i) => (
+              <div key={i} className="bg-surface rounded px-2 py-1 text-xs">
+                <span className="text-text-muted">{bd.featureLabels![i]}: </span>
+                <span className="font-mono text-text">{fmt(val)}</span>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {bd.done && bd.episodeDuration !== null && (() => {
         const result = getBalanceResult(bd.episodeDuration, bd.done)
@@ -353,18 +354,11 @@ function ReinforceView({ bd }: { bd: ClassicReinforceBreakdown }) {
               Episode Summary — Weights Updated
             </h4>
             <div className="flex gap-4 text-sm flex-wrap">
-              <div>
-                <span className="text-text-muted">Duration: </span>
-                <span className="font-mono text-text">{bd.episodeDuration} steps</span>
-              </div>
-              <div>
-                <span className="text-text-muted">Return (G): </span>
-                <span className="font-mono text-text">{bd.episodeReturn}</span>
-              </div>
-              <div>
-                <span className="text-text-muted">Baseline (b): </span>
-                <span className="font-mono text-text">{fmt(bd.baseline)}</span>
-              </div>
+              <div><span className="text-text-muted">Duration: </span><span className="font-mono text-text">{bd.episodeDuration} steps</span></div>
+              <div><span className="text-text-muted">Return (G): </span><span className="font-mono text-text">{bd.episodeReturn}</span></div>
+              {!bd.isNeural && bd.baseline !== undefined && (
+                <div><span className="text-text-muted">Baseline (b): </span><span className="font-mono text-text">{fmt(bd.baseline)}</span></div>
+              )}
               <div>
                 <span className="text-text-muted">Result: </span>
                 <span className={`font-mono ${result === 'solved' ? 'text-accent-green' : 'text-accent-red'}`}>
@@ -373,9 +367,11 @@ function ReinforceView({ bd }: { bd: ClassicReinforceBreakdown }) {
               </div>
             </div>
             <p className="text-xs text-text-muted mt-2">
-              {bd.episodeReturn !== null && bd.episodeReturn > bd.baseline
-                ? `Return (${bd.episodeReturn}) > baseline (${fmt(bd.baseline)}): actions taken this episode become more likely.`
-                : `Return (${bd.episodeReturn}) \u2264 baseline (${fmt(bd.baseline)}): actions taken this episode become less likely.`
+              {bd.isNeural
+                ? 'Returns are normalized (G̃_t = (G_t − μ)/σ) before updating. This reduces variance compared to using a running baseline.'
+                : bd.episodeReturn !== null && bd.baseline !== undefined && bd.episodeReturn > bd.baseline
+                  ? `Return (${bd.episodeReturn}) > baseline (${fmt(bd.baseline)}): actions in this episode become more likely.`
+                  : `Return (${bd.episodeReturn}) ≤ baseline (${fmt(bd.baseline ?? 0)}): actions in this episode become less likely.`
               }
             </p>
           </div>
@@ -387,9 +383,9 @@ function ReinforceView({ bd }: { bd: ClassicReinforceBreakdown }) {
           Policy Gradient Update Rule
         </h4>
         <p className="text-xs text-text-muted mb-2">
-          REINFORCE waits until the episode ends, then updates weights for every step.
-          G_t is the discounted return from step t, and b is the running baseline.
-          When G_t {'>'} b, the taken action is reinforced; when G_t {'<'} b, it's discouraged.
+          {bd.isNeural
+            ? 'Updates all network weights end-of-episode using normalized returns. Same algorithm, richer function approximator.'
+            : 'Updates linear weights end-of-episode. G_t > baseline → reinforce; G_t < baseline → discourage.'}
         </p>
         <div className="bg-surface rounded-lg p-3 overflow-x-auto">
           <RenderedEquation tex={formula} />
@@ -506,89 +502,6 @@ function DQNView({ bd }: { bd: ClassicDQNBreakdown }) {
         </p>
         <div className="bg-surface rounded-lg p-3 overflow-x-auto">
           <RenderedEquation tex="y = r + \gamma \max_{a'} Q_{\text{target}}(s', a') \quad \mathcal{L} = \frac{1}{B}\sum_{i=1}^{B}(y_i - Q_{\text{online}}(s_i, a_i))^2" />
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ─── Neural REINFORCE View ────────────────────────────────────────────────────
-
-function NeuralReinforceView({ bd }: { bd: ClassicNeuralReinforceBreakdown }) {
-  const formula = useMemo(() => generateClassicReinforceFormula(), [])
-
-  return (
-    <div className="flex flex-col gap-4">
-      <div className="bg-surface rounded-lg p-3">
-        <p className="text-sm text-text leading-relaxed">
-          Neural REINFORCE pushed {bd.actionName} (\u03C0 = {(bd.probabilities[bd.action] * 100).toFixed(1)}%).
-          {' '}Step {bd.stepInEpisode + 1} of episode {bd.episode}.
-          {bd.done
-            ? bd.episodeDuration !== null
-              ? ` Episode ended after ${bd.episodeDuration} steps (return: ${bd.episodeReturn}). Weights updated.`
-              : ' Episode ended. Weights updated.'
-            : ' Weights update deferred until episode ends.'}
-        </p>
-      </div>
-
-      {/* Policy probabilities */}
-      <div>
-        <h4 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2">
-          Policy \u03C0(a|s) — Neural Network
-        </h4>
-        <p className="text-xs text-text-muted mb-2">
-          The network outputs action probabilities via a 128-unit hidden layer and softmax output.
-          Unlike linear REINFORCE, it can represent non-linear decision boundaries.
-        </p>
-        <div className="flex gap-2">
-          {([0, 1] as const).map((a) => {
-            const prob = bd.probabilities[a]
-            const isTaken = a === bd.action
-            return (
-              <div
-                key={a}
-                className={`flex-1 rounded-lg p-2 ${isTaken ? 'bg-primary/15 border border-primary/30' : 'bg-surface border border-surface-lighter'}`}
-              >
-                <div className="text-xs text-text-muted">{CLASSIC_ACTION_NAMES[a]}</div>
-                <div className="text-lg font-mono font-bold text-text">{(prob * 100).toFixed(1)}%</div>
-                {isTaken && <div className="text-xs text-primary-light font-medium">chosen</div>}
-              </div>
-            )
-          })}
-        </div>
-      </div>
-
-      {bd.done && bd.episodeDuration !== null && (() => {
-        const result = getBalanceResult(bd.episodeDuration, bd.done)
-        return (
-          <div className="bg-surface rounded-lg p-3">
-            <h4 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2">
-              Episode Summary — Weights Updated
-            </h4>
-            <div className="flex gap-4 text-sm flex-wrap">
-              <div><span className="text-text-muted">Duration: </span><span className="font-mono text-text">{bd.episodeDuration} steps</span></div>
-              <div><span className="text-text-muted">Return: </span><span className="font-mono text-text">{bd.episodeReturn}</span></div>
-              <div>
-                <span className="text-text-muted">Result: </span>
-                <span className={`font-mono ${result === 'solved' ? 'text-accent-green' : 'text-accent-red'}`}>
-                  {result === 'solved' ? 'Solved!' : 'Fell'}
-                </span>
-              </div>
-            </div>
-            <p className="text-xs text-text-muted mt-2">
-              Returns are normalized: G\u0303_t = (G_t \u2212 \u03bc) / \u03c3. This zero-centers the signal,
-              reinforcing actions from above-average steps and discouraging below-average ones.
-            </p>
-          </div>
-        )
-      })()}
-
-      <div>
-        <h4 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2">
-          Policy Gradient Update Rule
-        </h4>
-        <div className="bg-surface rounded-lg p-3 overflow-x-auto">
-          <RenderedEquation tex={formula} />
         </div>
       </div>
     </div>

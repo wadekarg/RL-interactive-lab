@@ -369,19 +369,6 @@ export function ClassicCartPolePage() {
             </>
           )}
 
-          {algorithmType === 'reinforce' && (
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <label className="text-text">Learning Rate</label>
-                <span className="font-mono text-primary-light">{lr}</span>
-              </div>
-              <input type="range" min={0.001} max={0.1} step={0.001} value={lr}
-                onChange={(e) => setLr(Number(e.target.value))} disabled={isRunning}
-                className="w-full accent-primary disabled:opacity-40" />
-              <p className="text-xs text-text-muted mt-0.5">{classicCartpoleParamExplanations.lr}</p>
-            </div>
-          )}
-
           {algorithmType === 'discretized-q' && (
             <div>
               <div className="flex justify-between text-sm mb-1">
@@ -395,17 +382,29 @@ export function ClassicCartPolePage() {
             </div>
           )}
 
-          {algorithmType === 'reinforce' && (
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <label className="text-text">{'\u03B3'} Discount Factor</label>
-                <span className="font-mono text-primary-light">{gammaRF}</span>
+          {(algorithmType === 'reinforce' || algorithmType === 'neural-reinforce' || algorithmType === 'a2c') && (
+            <>
+              <div>
+                <div className="flex justify-between text-sm mb-1">
+                  <label className="text-text">Learning Rate</label>
+                  <span className="font-mono text-primary-light">{lr}</span>
+                </div>
+                <input type="range" min={0.001} max={0.1} step={0.001} value={lr}
+                  onChange={(e) => setLr(Number(e.target.value))} disabled={isRunning}
+                  className="w-full accent-primary disabled:opacity-40" />
+                <p className="text-xs text-text-muted mt-0.5">{classicCartpoleParamExplanations.lr}</p>
               </div>
-              <input type="range" min={0.9} max={1} step={0.005} value={gammaRF}
-                onChange={(e) => setGammaRF(Number(e.target.value))} disabled={isRunning}
-                className="w-full accent-primary disabled:opacity-40" />
-              <p className="text-xs text-text-muted mt-0.5">{classicCartpoleParamExplanations.gamma}</p>
-            </div>
+              <div>
+                <div className="flex justify-between text-sm mb-1">
+                  <label className="text-text">{'\u03B3'} Discount Factor</label>
+                  <span className="font-mono text-primary-light">{gammaRF}</span>
+                </div>
+                <input type="range" min={0.9} max={1} step={0.005} value={gammaRF}
+                  onChange={(e) => setGammaRF(Number(e.target.value))} disabled={isRunning}
+                  className="w-full accent-primary disabled:opacity-40" />
+                <p className="text-xs text-text-muted mt-0.5">{classicCartpoleParamExplanations.gamma}</p>
+              </div>
+            </>
           )}
 
           {algorithmType === 'dqn' && (
@@ -439,31 +438,6 @@ export function ClassicCartPolePage() {
                   onChange={(e) => setEpsilon(Number(e.target.value))} disabled={isRunning}
                   className="w-full accent-primary disabled:opacity-40" />
                 <p className="text-xs text-text-muted mt-0.5">Starting exploration rate. Decays per-step automatically.</p>
-              </div>
-            </>
-          )}
-
-          {(algorithmType === 'neural-reinforce' || algorithmType === 'a2c') && (
-            <>
-              <div>
-                <div className="flex justify-between text-sm mb-1">
-                  <label className="text-text">Learning Rate</label>
-                  <span className="font-mono text-primary-light">{lr}</span>
-                </div>
-                <input type="range" min={0.001} max={0.05} step={0.001} value={lr}
-                  onChange={(e) => setLr(Number(e.target.value))} disabled={isRunning}
-                  className="w-full accent-primary disabled:opacity-40" />
-                <p className="text-xs text-text-muted mt-0.5">{classicCartpoleParamExplanations.lr}</p>
-              </div>
-              <div>
-                <div className="flex justify-between text-sm mb-1">
-                  <label className="text-text">{'\u03B3'} Discount Factor</label>
-                  <span className="font-mono text-primary-light">{gammaRF}</span>
-                </div>
-                <input type="range" min={0.9} max={1} step={0.005} value={gammaRF}
-                  onChange={(e) => setGammaRF(Number(e.target.value))} disabled={isRunning}
-                  className="w-full accent-primary disabled:opacity-40" />
-                <p className="text-xs text-text-muted mt-0.5">{classicCartpoleParamExplanations.gamma}</p>
               </div>
             </>
           )}

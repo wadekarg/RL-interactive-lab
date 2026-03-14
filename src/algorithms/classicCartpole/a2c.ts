@@ -4,15 +4,13 @@
  * Ported from Jordan Lei's Actor-Critic implementation.
  *
  * Architecture:
- *   Actor  (policy):  4 → 128 → 2  (softmax — probability of left/right)
- *   Critic (value):   4 → 128 → 1  (linear  — estimates V(s))
+ *   Actor  (policy):  4 → 128 → 2  (softmax) — via shared SoftmaxNet
+ *   Critic (value):   4 → 128 → 1  (linear)
  *
  * Update (per episode):
  *   advantage_t = G_t − V(s_t)
  *   actor_loss  = mean(−log π(a_t|s_t) × advantage_t.detach)
  *   critic_loss = 0.0005 × mean(advantage_t²)
- *
- * Both actor and critic use separate Adam optimizers.
  */
 
 import type { Agent } from '../types'
@@ -20,7 +18,6 @@ import type { ClassicCartPoleState, ClassicCartPoleAction } from '../../environm
 import {
   linear,
   relu,
-  softmax,
   heInit,
   zerosInit,
   adamInit,
@@ -29,74 +26,50 @@ import {
   accumWeightGrad,
   accumBiasGrad,
   sampleCategorical,
+  SoftmaxNet,
   AdamState,
 } from './nnUtils'
+import type { SoftmaxNetStep } from './nnUtils'
 
 // ─── Trajectory record ────────────────────────────────────────────────────────
 
-interface A2CStep {
-  x: number[]           // state [4]
-  // Actor activations
-  actH1: number[]       // post-ReLU [128]
-  actPre1: number[]     // pre-ReLU [128]
-  probs: number[]       // π(·|s) [2]
-  action: number
-  // Critic activations
-  criH1: number[]       // post-ReLU [128]
-  criPre1: number[]     // pre-ReLU [128]
-  value: number         // V(s)
+interface A2CStep extends SoftmaxNetStep {
+  // Actor fields come from SoftmaxNetStep (x, h1, pre1, probs, action)
+  criH1: number[]
+  criPre1: number[]
+  value: number
   reward: number
 }
 
 // ─── A2CAgent ─────────────────────────────────────────────────────────────────
 
 export class A2CAgent implements Agent<ClassicCartPoleState, ClassicCartPoleAction> {
-  // Actor weights: 4 → 128 → 2
-  private actW1: number[]    // [128 * 4]
-  private actB1: number[]    // [128]
-  private actW2: number[]    // [2 * 128]
-  private actB2: number[]    // [2]
+  private actor: SoftmaxNet    // 4 → 128 → 2 (shared SoftmaxNet)
 
   // Critic weights: 4 → 128 → 1
-  private criW1: number[]    // [128 * 4]
-  private criB1: number[]    // [128]
-  private criW2: number[]    // [1 * 128]
-  private criB2: number[]    // [1]
-
-  // Adam states
-  private adamActW1: AdamState; private adamActB1: AdamState
-  private adamActW2: AdamState; private adamActB2: AdamState
+  private criW1: number[]; private criB1: number[]
+  private criW2: number[]; private criB2: number[]
   private adamCriW1: AdamState; private adamCriB1: AdamState
   private adamCriW2: AdamState; private adamCriB2: AdamState
 
   private readonly lr: number
   private readonly gamma: number
-  private readonly criticScale: number   // = 0.0005 from Jordan's impl
+  private readonly criticScale: number
 
   private trajectory: A2CStep[] = []
   private lastProbs = [0.5, 0.5]
   private lastValue = 0
+  private _lastActorStep: SoftmaxNetStep | null = null
 
   constructor(lr = 0.005, gamma = 0.99, criticScale = 0.0005) {
     this.lr = lr
     this.gamma = gamma
     this.criticScale = criticScale
-    this.actW1 = heInit(128, 4); this.actB1 = zerosInit(128)
-    this.actW2 = heInit(2, 128); this.actB2 = zerosInit(2)
+    this.actor = new SoftmaxNet(4, 128, 2)
     this.criW1 = heInit(128, 4); this.criB1 = zerosInit(128)
     this.criW2 = heInit(1, 128); this.criB2 = zerosInit(1)
-    this.adamActW1 = adamInit(128 * 4); this.adamActB1 = adamInit(128)
-    this.adamActW2 = adamInit(2 * 128); this.adamActB2 = adamInit(2)
     this.adamCriW1 = adamInit(128 * 4); this.adamCriB1 = adamInit(128)
     this.adamCriW2 = adamInit(1 * 128); this.adamCriB2 = adamInit(1)
-  }
-
-  private actorForward(x: number[]) {
-    const actPre1 = linear(this.actW1, this.actB1, x, 128, 4)
-    const actH1 = relu(actPre1)
-    const logits = linear(this.actW2, this.actB2, actH1, 2, 128)
-    const probs = softmax(logits)
-    return { probs, actH1, actPre1 }
   }
 
   private criticForward(x: number[]) {
@@ -108,10 +81,11 @@ export class A2CAgent implements Agent<ClassicCartPoleState, ClassicCartPoleActi
 
   act(state: ClassicCartPoleState): ClassicCartPoleAction {
     const x = [state.x, state.xDot, state.theta, state.thetaDot]
-    const { probs } = this.actorForward(x)
+    const { probs, h1, pre1 } = this.actor.forward(x)
     const { value } = this.criticForward(x)
     this.lastProbs = probs
     this.lastValue = value
+    this._lastActorStep = { x, h1, pre1, probs, action: -1 }
     return sampleCategorical(probs) as ClassicCartPoleAction
   }
 
@@ -123,14 +97,14 @@ export class A2CAgent implements Agent<ClassicCartPoleState, ClassicCartPoleActi
     done: boolean,
   ): void {
     const x = [state.x, state.xDot, state.theta, state.thetaDot]
-    const { probs, actH1, actPre1 } = this.actorForward(x)
+    const actorStep = this._lastActorStep ?? { x, ...this.actor.forward(x) }
+    this._lastActorStep = null
     const { value, criH1, criPre1 } = this.criticForward(x)
-
-    this.trajectory.push({ x, actH1, actPre1, probs, action, criH1, criPre1, value, reward })
+    this.trajectory.push({ ...actorStep, action, criH1, criPre1, value, reward })
 
     if (!done) return
 
-    // ── Episode ended: compute returns and advantages ──────────────────────
+    // ── Episode ended ──────────────────────────────────────────────────────
 
     const T = this.trajectory.length
     const G = new Array<number>(T)
@@ -140,54 +114,36 @@ export class A2CAgent implements Agent<ClassicCartPoleState, ClassicCartPoleActi
       G[t] = g
     }
 
-    // advantage_t = G_t - V(s_t)
     const advantages = this.trajectory.map((step, t) => G[t] - step.value)
 
-    // ── Actor gradients ────────────────────────────────────────────────────
+    // ── Actor update via SoftmaxNet ────────────────────────────────────────
     const dActW1 = zerosInit(128 * 4); const dActB1 = zerosInit(128)
     const dActW2 = zerosInit(2 * 128); const dActB2 = zerosInit(2)
 
     for (let t = 0; t < T; t++) {
-      const { x: xt, actH1, actPre1, probs: pt, action: at } = this.trajectory[t]
-      const adv = advantages[t] / T  // average over episode (detached from critic)
-
-      // dL_actor/dlogits[j] = adv * (probs[j] - I(j==action))
-      const dLogits = pt.map((p, j) => adv * (p - (j === at ? 1 : 0)))
-
-      const dActH1 = linearBackward(this.actW2, dLogits, 2, 128)
-      accumWeightGrad(dActW2, dLogits, actH1, 2, 128)
-      accumBiasGrad(dActB2, dLogits)
-
-      const dActPre1 = dActH1.map((v, i) => (actPre1[i] > 0 ? v : 0))
-      accumWeightGrad(dActW1, dActPre1, xt, 128, 4)
-      accumBiasGrad(dActB1, dActPre1)
+      this.actor.accumulatePolicyGrad(
+        dActW1, dActB1, dActW2, dActB2,
+        this.trajectory[t],
+        advantages[t] / T,
+      )
     }
+    this.actor.applyGrads(dActW1, dActB1, dActW2, dActB2, this.lr)
 
-    // ── Critic gradients ───────────────────────────────────────────────────
+    // ── Critic update ──────────────────────────────────────────────────────
     const dCriW1 = zerosInit(128 * 4); const dCriB1 = zerosInit(128)
     const dCriW2 = zerosInit(1 * 128); const dCriB2 = zerosInit(1)
 
     for (let t = 0; t < T; t++) {
-      const { x: xt, criH1, criPre1 } = this.trajectory[t]
-      const adv = advantages[t]
-
-      // L_critic = criticScale * (G_t - V)^2, so dL/dV = -2 * criticScale * advantage / T
-      const dOut1 = [-2 * this.criticScale * adv / T]
-
+      const { criH1, criPre1 } = this.trajectory[t]
+      // L_critic = criticScale * (G_t − V)², dL/dV = −2 * criticScale * advantage / T
+      const dOut1 = [-2 * this.criticScale * advantages[t] / T]
       const dCriH1 = linearBackward(this.criW2, dOut1, 1, 128)
       accumWeightGrad(dCriW2, dOut1, criH1, 1, 128)
       accumBiasGrad(dCriB2, dOut1)
-
       const dCriPre1 = dCriH1.map((v, i) => (criPre1[i] > 0 ? v : 0))
-      accumWeightGrad(dCriW1, dCriPre1, xt, 128, 4)
+      accumWeightGrad(dCriW1, dCriPre1, this.trajectory[t].x, 128, 4)
       accumBiasGrad(dCriB1, dCriPre1)
     }
-
-    // ── Adam updates ───────────────────────────────────────────────────────
-    adamUpdate(this.actW1, dActW1, this.adamActW1, this.lr)
-    adamUpdate(this.actB1, dActB1, this.adamActB1, this.lr)
-    adamUpdate(this.actW2, dActW2, this.adamActW2, this.lr)
-    adamUpdate(this.actB2, dActB2, this.adamActB2, this.lr)
 
     adamUpdate(this.criW1, dCriW1, this.adamCriW1, this.lr)
     adamUpdate(this.criB1, dCriB1, this.adamCriB1, this.lr)
@@ -205,16 +161,14 @@ export class A2CAgent implements Agent<ClassicCartPoleState, ClassicCartPoleActi
   }
 
   reset(): void {
-    this.actW1 = heInit(128, 4); this.actB1 = zerosInit(128)
-    this.actW2 = heInit(2, 128); this.actB2 = zerosInit(2)
+    this.actor.reset()
     this.criW1 = heInit(128, 4); this.criB1 = zerosInit(128)
     this.criW2 = heInit(1, 128); this.criB2 = zerosInit(1)
-    this.adamActW1 = adamInit(128 * 4); this.adamActB1 = adamInit(128)
-    this.adamActW2 = adamInit(2 * 128); this.adamActB2 = adamInit(2)
     this.adamCriW1 = adamInit(128 * 4); this.adamCriB1 = adamInit(128)
     this.adamCriW2 = adamInit(1 * 128); this.adamCriB2 = adamInit(1)
     this.trajectory = []
     this.lastProbs = [0.5, 0.5]
     this.lastValue = 0
+    this._lastActorStep = null
   }
 }

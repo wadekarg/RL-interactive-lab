@@ -44,6 +44,7 @@ export interface ClassicTDBreakdown {
 
 export interface ClassicReinforceBreakdown {
   type: 'classic-reinforce'
+  isNeural: boolean          // true = neural network policy; false = linear softmax
   stepIndex: number
   episode: number
   stepInEpisode: number
@@ -55,10 +56,11 @@ export interface ClassicReinforceBreakdown {
   done: boolean
   episodeDuration: number | null
   episodeReturn: number | null
-  features: number[]
-  featureLabels: string[]
   probabilities: number[]
-  baseline: number
+  // Linear-only fields (undefined when isNeural = true)
+  features?: number[]
+  featureLabels?: string[]
+  baseline?: number
 }
 
 export interface ClassicRandomBreakdown {
@@ -92,22 +94,6 @@ export interface ClassicDQNBreakdown {
   tdError: number
 }
 
-export interface ClassicNeuralReinforceBreakdown {
-  type: 'classic-neural-reinforce'
-  stepIndex: number
-  episode: number
-  stepInEpisode: number
-  state: ClassicCartPoleState
-  action: ClassicCartPoleAction
-  actionName: string
-  reward: number
-  nextState: ClassicCartPoleState
-  done: boolean
-  episodeDuration: number | null
-  episodeReturn: number | null
-  probabilities: number[]
-}
-
 export interface ClassicA2CBreakdown {
   type: 'classic-a2c'
   stepIndex: number
@@ -130,7 +116,6 @@ export type ClassicBreakdown =
   | ClassicReinforceBreakdown
   | ClassicRandomBreakdown
   | ClassicDQNBreakdown
-  | ClassicNeuralReinforceBreakdown
   | ClassicA2CBreakdown
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -295,6 +280,7 @@ export function computeClassicTDBreakdown(
 export function computeClassicReinforceBreakdown(
   history: SimulationStep[],
   stepIndex: number,
+  isNeural = false,
 ): ClassicReinforceBreakdown | null {
   if (stepIndex < 0 || stepIndex >= history.length) return null
 
@@ -307,29 +293,35 @@ export function computeClassicReinforceBreakdown(
   const duration = getEpisodeDuration(history, stepIndex)
   const episodeReturn = getEpisodeReturn(history, stepIndex)
 
-  // Compute features and probabilities from stored weights
+  if (isNeural) {
+    // Neural policy: probabilities stored directly in step.values.probs
+    const probabilities: number[] = step.values?.probs ?? [0.5, 0.5]
+    return {
+      type: 'classic-reinforce',
+      isNeural: true,
+      stepIndex, episode, stepInEpisode,
+      state, action,
+      actionName: CLASSIC_ACTION_NAMES[action],
+      reward: step.reward, nextState, done: step.done,
+      episodeDuration: duration, episodeReturn, probabilities,
+    }
+  }
+
+  // Linear policy: recompute probabilities from stored weight matrix
   const phi = classicFeatures(state)
   const flatWeights = step.values?.weights ?? new Array(NUM_CLASSIC_ACTIONS * NUM_CLASSIC_FEATURES).fill(0)
-  const probs = computeProbsFromWeights(flatWeights, NUM_CLASSIC_ACTIONS, NUM_CLASSIC_FEATURES, phi)
+  const probabilities = computeProbsFromWeights(flatWeights, NUM_CLASSIC_ACTIONS, NUM_CLASSIC_FEATURES, phi)
   const baseline = step.values?.baseline?.[0] ?? 0
 
   return {
     type: 'classic-reinforce',
-    stepIndex,
-    episode,
-    stepInEpisode,
-    state,
-    action,
+    isNeural: false,
+    stepIndex, episode, stepInEpisode,
+    state, action,
     actionName: CLASSIC_ACTION_NAMES[action],
-    reward: step.reward,
-    nextState,
-    done: step.done,
-    episodeDuration: duration,
-    episodeReturn,
-    features: phi,
-    featureLabels: CLASSIC_FEATURE_LABELS,
-    probabilities: probs,
-    baseline,
+    reward: step.reward, nextState, done: step.done,
+    episodeDuration: duration, episodeReturn, probabilities,
+    features: phi, featureLabels: CLASSIC_FEATURE_LABELS, baseline,
   }
 }
 
@@ -438,7 +430,7 @@ export function generateClassicReinforceNarrative(bd: ClassicReinforceBreakdown)
     const durText = bd.episodeDuration !== null
       ? `Episode ${bd.episode} lasted ${bd.episodeDuration} steps (return: ${bd.episodeReturn}).`
       : `Episode ${bd.episode} ended.`
-    const baselineNote = bd.episodeReturn !== null
+    const baselineNote = bd.episodeReturn !== null && bd.baseline !== undefined
       ? bd.episodeReturn > bd.baseline
         ? ` Return > baseline (${fmt(bd.baseline)}) \u2014 actions in this episode get reinforced.`
         : ` Return < baseline (${fmt(bd.baseline)}) \u2014 actions in this episode get discouraged.`
@@ -525,42 +517,6 @@ export function generateClassicDQNNarrative(bd: ClassicDQNBreakdown): string {
       : ''
 
   return `Pushed ${bd.actionName} \u2014 ${moveType}. \u03B5=${(bd.epsilon * 100).toFixed(1)}%. ${outcome}${bufferNote}`
-}
-
-// ─── Neural REINFORCE Breakdown ───────────────────────────────────────────────
-
-export function computeClassicNeuralReinforceBreakdown(
-  history: SimulationStep[],
-  stepIndex: number,
-): ClassicNeuralReinforceBreakdown | null {
-  if (stepIndex < 0 || stepIndex >= history.length) return null
-
-  const step = history[stepIndex]
-  const state = step.state as ClassicCartPoleState
-  const action = step.action as ClassicCartPoleAction
-  const nextState = step.nextState as ClassicCartPoleState
-
-  const { episode, stepInEpisode } = getEpisodeInfo(history, stepIndex)
-  const duration = getEpisodeDuration(history, stepIndex)
-  const episodeReturn = getEpisodeReturn(history, stepIndex)
-
-  const probabilities: number[] = step.values?.probs ?? [0.5, 0.5]
-
-  return {
-    type: 'classic-neural-reinforce',
-    stepIndex,
-    episode,
-    stepInEpisode,
-    state,
-    action,
-    actionName: CLASSIC_ACTION_NAMES[action],
-    reward: step.reward,
-    nextState,
-    done: step.done,
-    episodeDuration: duration,
-    episodeReturn,
-    probabilities,
-  }
 }
 
 // ─── A2C Breakdown ────────────────────────────────────────────────────────────
