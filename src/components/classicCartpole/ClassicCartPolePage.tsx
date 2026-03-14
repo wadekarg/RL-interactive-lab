@@ -30,8 +30,8 @@ export function ClassicCartPolePage() {
   const [epsilon, setEpsilon] = useState(1.0)
   const [lr, setLr] = useState(0.002)
   const [bins, setBins] = useState(6)
-  const [epsilonDecay, setEpsilonDecay] = useState(0.995)
-  const [epsilonMin, setEpsilonMin] = useState(0.05)
+  const [epsilonDecay, setEpsilonDecay] = useState(0.9985)
+  const [epsilonMin, setEpsilonMin] = useState(0.02)
   const [showIntro, setShowIntro] = useState(true)
   const [maxSteps, setMaxSteps] = useState(100000)
   const [envSeed, setEnvSeed] = useState(0)
@@ -346,7 +346,7 @@ export function ClassicCartPolePage() {
                   <label className="text-text">{'\u03B5'} Minimum</label>
                   <span className="font-mono text-primary-light">{epsilonMin}</span>
                 </div>
-                <input type="range" min={0} max={0.2} step={0.01} value={epsilonMin}
+                <input type="range" min={0.01} max={0.2} step={0.01} value={epsilonMin}
                   onChange={(e) => setEpsilonMin(Number(e.target.value))} disabled={isRunning}
                   className="w-full accent-primary disabled:opacity-40" />
                 <p className="text-xs text-text-muted mt-0.5">{classicCartpoleParamExplanations.epsilonMin}</p>

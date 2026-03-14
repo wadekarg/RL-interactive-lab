@@ -9,7 +9,8 @@ import { argmax, randInt } from '../../utils/math'
  * Bins the 4 continuous state variables (x, xDot, theta, thetaDot)
  * into discrete buckets. Default: 6×6×12×12 = 5,184 states.
  *
- * Both α and ε decay per episode — constant α prevents Q-values from stabilizing.
+ * Both α and ε decay per episode. α decays to near-zero (0.001) so exploratory updates
+ * stop corrupting the Q-table once a good policy is found.
  */
 export class DiscretizedQLearningAgent implements Agent<ClassicCartPoleState, ClassicCartPoleAction> {
   private qTable: Map<string, number[]> = new Map()
@@ -21,7 +22,7 @@ export class DiscretizedQLearningAgent implements Agent<ClassicCartPoleState, Cl
   private currentEpsilon: number
   private currentAlpha: number   // decayed learning rate
   private readonly alphaDecay = 0.999
-  private readonly alphaMin = 0.1
+  private readonly alphaMin = 0.001
   private episodeCount = 0
   private discretizationConfig: ClassicDiscretizationConfig
   private numActions = 2
@@ -31,8 +32,8 @@ export class DiscretizedQLearningAgent implements Agent<ClassicCartPoleState, Cl
     gamma = 0.99,
     epsilon = 1.0,
     discretizationConfig: ClassicDiscretizationConfig = DEFAULT_CLASSIC_DISCRETIZATION,
-    epsilonDecay = 0.995,
-    epsilonMin = 0.05,
+    epsilonDecay = 0.9985,
+    epsilonMin = 0.02,
   ) {
     this.alpha = alpha
     this.gamma = gamma
