@@ -84,85 +84,6 @@ export const classicCartpoleAlgorithms = {
       },
     ],
   },
-  dqn: {
-    name: 'DQN',
-    description:
-      'Deep Q-Network replaces the Q-table with a neural network. The same Bellman update, but now Q-values are estimated by a 3-layer network (4\u2192128\u219264\u21922) trained via gradient descent.',
-    sections: [
-      {
-        title: 'Experience Replay',
-        content:
-          'DQN stores past transitions (s, a, r, s\u2032) in a replay buffer and trains on random mini-batches. This breaks the correlation between consecutive steps, making gradient updates more stable than learning online from each step.',
-      },
-      {
-        title: 'Target Network',
-        content:
-          'A second "target" network provides stable Q-value targets for the Bellman update. It is periodically synced from the online network (every 50 steps here). Without this, the network chases a moving target and often diverges.',
-        equation: 'y_t = r_t + \\gamma \\max_{a\'} Q_{\\text{target}}(s\'_t, a\')',
-      },
-      {
-        title: '\u03B5-Greedy Exploration',
-        content:
-          'DQN uses exponential per-step \u03B5 decay \u2014 epsilon decreases every step (not every episode). This means the agent transitions from exploration to exploitation gradually as it accumulates experience, independent of episode length.',
-      },
-      {
-        title: 'Watch for this',
-        content:
-          'DQN takes longer to warm up (buffer must fill before learning starts) but becomes very stable once it does. The episode duration chart should show slow early progress followed by rapid improvement as the replay buffer accumulates useful experience.',
-      },
-    ],
-  },
-  'neural-reinforce': {
-    name: 'Neural REINFORCE',
-    description:
-      'The same Monte Carlo policy gradient as REINFORCE, but the policy is a neural network (4\u2192128\u21922) instead of a linear function. Learns richer representations directly from raw state.',
-    sections: [
-      {
-        title: 'Neural Network Policy',
-        content:
-          'The policy \u03C0\u03B8(a|s) is represented by a 2-layer network: hidden layer of 128 ReLU units, then softmax output. This can capture non-linear state patterns that the linear policy cannot, at the cost of more parameters to optimize.',
-        equation: '\\pi_\\theta(a|s) = \\text{softmax}(W_2 \\cdot \\text{ReLU}(W_1 s + b_1) + b_2)',
-      },
-      {
-        title: 'Return Normalization',
-        content:
-          'Instead of a running baseline, Neural REINFORCE normalizes the episode returns: G\u0303_t = (G_t \u2212 \u03bc) / (\u03c3 + \u03b5). This zero-centers and unit-scales the returns within each episode, reducing variance and improving training stability \u2014 especially when returns vary widely across episodes.',
-      },
-      {
-        title: 'Watch for this',
-        content:
-          'Like linear REINFORCE, neural REINFORCE updates only at episode end. Early episodes may be noisy, but once the network finds a good region of weight space, performance improves quickly. Compare with linear REINFORCE to see how neural capacity changes the learning dynamics.',
-      },
-    ],
-  },
-  a2c: {
-    name: 'A2C',
-    description:
-      'Advantage Actor-Critic maintains two separate networks: an Actor that learns the policy and a Critic that estimates state values V(s). The advantage A_t = G_t \u2212 V(s_t) tells each action whether it was better or worse than average.',
-    sections: [
-      {
-        title: 'Actor and Critic',
-        content:
-          'The Actor (4\u2192128\u21922 softmax) decides which action to take. The Critic (4\u2192128\u21921 linear) estimates how good the current state is. They share the same input but have completely separate weights and separate Adam optimizers.',
-      },
-      {
-        title: 'Advantage Estimate',
-        content:
-          'Instead of raw returns (which can be large and noisy), the actor is updated using the advantage A_t = G_t \u2212 V(s_t). This subtracts the baseline predicted by the critic, reducing variance while keeping the correct gradient direction.',
-        equation: 'A_t = G_t - V(s_t)',
-      },
-      {
-        title: 'Critic Loss',
-        content:
-          'The critic minimizes 0.0005 \u00D7 A_t\u00B2 \u2014 a small coefficient keeps value estimates from dominating the gradient. As the critic improves, advantage estimates become more accurate, and actor updates become lower-variance.',
-      },
-      {
-        title: 'Watch for this',
-        content:
-          'A2C often shows smoother learning curves than REINFORCE because the advantage reduces gradient variance. Watch the state value display in the breakdown panel \u2014 as the critic learns, V(s) should increase from ~0 toward the true expected returns.',
-      },
-    ],
-  },
 }
 
 export const classicCartpoleParamExplanations: Record<string, string> = {
@@ -173,5 +94,4 @@ export const classicCartpoleParamExplanations: Record<string, string> = {
   lr: 'Policy learning rate \u2014 how quickly the policy weights update. Too high = unstable. Too low = slow. Try 0.01.',
   epsilonDecay: 'After each episode, \u03B5 is multiplied by this factor. At 0.995, \u03B5 halves roughly every 140 episodes. Set to 1.0 to disable decay.',
   epsilonMin: 'The floor for \u03B5 \u2014 exploration never drops below this. Prevents the agent from becoming fully greedy.',
-  lrDQN: 'DQN learning rate \u2014 how fast the Q-network weights update. Lower than policy methods (0.001) because neural Q-learning is more sensitive to large updates.',
 }
