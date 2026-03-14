@@ -5,6 +5,9 @@ import type { ClassicCartPoleState, ClassicCartPoleAction, ClassicDiscretization
 import { RandomAgent } from '../../algorithms/classicCartpole/randomAgent'
 import { DiscretizedQLearningAgent } from '../../algorithms/classicCartpole/discretizedQLearning'
 import { ReinforceAgent } from '../../algorithms/classicCartpole/reinforce'
+import { DQNAgent } from '../../algorithms/classicCartpole/dqn'
+import { NeuralReinforceAgent } from '../../algorithms/classicCartpole/neuralReinforce'
+import { A2CAgent } from '../../algorithms/classicCartpole/a2c'
 import { useSimulationStore } from '../../store/simulationStore'
 import { PlaybackControls } from '../shared/PlaybackControls'
 import { AlgorithmExplainer } from '../shared/AlgorithmExplainer'
@@ -14,7 +17,16 @@ import { ClassicStepBreakdownPanel } from './ClassicStepBreakdownPanel'
 import { classicCartpoleAlgorithms, classicCartpoleIntro, classicCartpoleParamExplanations } from '../../content/classicCartpoleExplainer'
 import type { Agent } from '../../algorithms/types'
 
-type AlgorithmType = 'random' | 'discretized-q' | 'reinforce'
+type AlgorithmType = 'random' | 'discretized-q' | 'reinforce' | 'dqn' | 'neural-reinforce' | 'a2c'
+
+const ALGO_CATEGORY: Record<AlgorithmType, string> = {
+  random: 'baseline',
+  'discretized-q': 'value-based',
+  reinforce: 'policy gradient',
+  dqn: 'deep value-based',
+  'neural-reinforce': 'deep policy grad',
+  a2c: 'actor-critic',
+}
 
 export function ClassicCartPolePage() {
   const [algorithmType, setAlgorithmType] = useState<AlgorithmType>('discretized-q')
@@ -23,6 +35,7 @@ export function ClassicCartPolePage() {
   const [gammaRF, setGammaRF] = useState(0.97)
   const [epsilon, setEpsilon] = useState(1.0)
   const [lr, setLr] = useState(0.005)
+  const [lrDQN, setLrDQN] = useState(0.001)
   const [bins, setBins] = useState(6)
   const [epsilonDecay, setEpsilonDecay] = useState(0.998)
   const [epsilonMin, setEpsilonMin] = useState(0.01)
@@ -57,8 +70,14 @@ export function ClassicCartPolePage() {
         return new DiscretizedQLearningAgent(alpha, gamma, epsilon, discretizationConfig, epsilonDecay, epsilonMin)
       case 'reinforce':
         return new ReinforceAgent(lr, gammaRF)
+      case 'dqn':
+        return new DQNAgent(lrDQN, gamma, epsilon)
+      case 'neural-reinforce':
+        return new NeuralReinforceAgent(lr, gammaRF)
+      case 'a2c':
+        return new A2CAgent(lr, gammaRF)
     }
-  }, [algorithmType, alpha, gamma, gammaRF, epsilon, lr, discretizationConfig, epsilonDecay, epsilonMin, envSeed]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [algorithmType, alpha, gamma, gammaRF, epsilon, lr, lrDQN, discretizationConfig, epsilonDecay, epsilonMin, envSeed]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const stateRef = useRef<ClassicCartPoleState>(environment.reset())
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -267,16 +286,16 @@ export function ClassicCartPolePage() {
               }`}
             >
               {classicCartpoleAlgorithms[type].name}
-              <span className="ml-1 text-xs opacity-60">
-                {type === 'random' ? '(baseline)' : type === 'discretized-q' ? '(value-based)' : '(policy gradient)'}
-              </span>
+              <span className="ml-1 text-xs opacity-60">({ALGO_CATEGORY[type]})</span>
             </button>
           ))}
         </div>
         <p className="text-xs text-text-muted mt-2">
-          <strong>Baseline:</strong> Random pushes, no learning.
-          <strong className="ml-2">Value-based:</strong> Discretized Q-table with {'\u03B5'}-greedy.
-          <strong className="ml-2">Policy Gradient:</strong> REINFORCE with linear softmax policy.
+          <strong>Baseline:</strong> Random.{' '}
+          <strong>Value:</strong> Q-table (discretized).{' '}
+          <strong>Deep Value:</strong> DQN (neural Q-network + replay).{' '}
+          <strong>Policy:</strong> REINFORCE (linear or neural).{' '}
+          <strong>Actor-Critic:</strong> A2C (separate policy + value networks).
         </p>
       </div>
 
@@ -389,6 +408,66 @@ export function ClassicCartPolePage() {
             </div>
           )}
 
+          {algorithmType === 'dqn' && (
+            <>
+              <div>
+                <div className="flex justify-between text-sm mb-1">
+                  <label className="text-text">Learning Rate</label>
+                  <span className="font-mono text-primary-light">{lrDQN}</span>
+                </div>
+                <input type="range" min={0.0001} max={0.01} step={0.0001} value={lrDQN}
+                  onChange={(e) => setLrDQN(Number(e.target.value))} disabled={isRunning}
+                  className="w-full accent-primary disabled:opacity-40" />
+                <p className="text-xs text-text-muted mt-0.5">{classicCartpoleParamExplanations.lrDQN}</p>
+              </div>
+              <div>
+                <div className="flex justify-between text-sm mb-1">
+                  <label className="text-text">{'\u03B3'} Discount Factor</label>
+                  <span className="font-mono text-primary-light">{gamma}</span>
+                </div>
+                <input type="range" min={0.9} max={1} step={0.005} value={gamma}
+                  onChange={(e) => setGamma(Number(e.target.value))} disabled={isRunning}
+                  className="w-full accent-primary disabled:opacity-40" />
+                <p className="text-xs text-text-muted mt-0.5">{classicCartpoleParamExplanations.gamma}</p>
+              </div>
+              <div>
+                <div className="flex justify-between text-sm mb-1">
+                  <label className="text-text">{'\u03B5'} Initial Exploration</label>
+                  <span className="font-mono text-primary-light">{epsilon}</span>
+                </div>
+                <input type="range" min={0} max={1.0} step={0.01} value={epsilon}
+                  onChange={(e) => setEpsilon(Number(e.target.value))} disabled={isRunning}
+                  className="w-full accent-primary disabled:opacity-40" />
+                <p className="text-xs text-text-muted mt-0.5">Starting exploration rate. Decays per-step automatically.</p>
+              </div>
+            </>
+          )}
+
+          {(algorithmType === 'neural-reinforce' || algorithmType === 'a2c') && (
+            <>
+              <div>
+                <div className="flex justify-between text-sm mb-1">
+                  <label className="text-text">Learning Rate</label>
+                  <span className="font-mono text-primary-light">{lr}</span>
+                </div>
+                <input type="range" min={0.001} max={0.05} step={0.001} value={lr}
+                  onChange={(e) => setLr(Number(e.target.value))} disabled={isRunning}
+                  className="w-full accent-primary disabled:opacity-40" />
+                <p className="text-xs text-text-muted mt-0.5">{classicCartpoleParamExplanations.lr}</p>
+              </div>
+              <div>
+                <div className="flex justify-between text-sm mb-1">
+                  <label className="text-text">{'\u03B3'} Discount Factor</label>
+                  <span className="font-mono text-primary-light">{gammaRF}</span>
+                </div>
+                <input type="range" min={0.9} max={1} step={0.005} value={gammaRF}
+                  onChange={(e) => setGammaRF(Number(e.target.value))} disabled={isRunning}
+                  className="w-full accent-primary disabled:opacity-40" />
+                <p className="text-xs text-text-muted mt-0.5">{classicCartpoleParamExplanations.gamma}</p>
+              </div>
+            </>
+          )}
+
           {algorithmType === 'random' && (
             <div className="col-span-full">
               <p className="text-sm text-text-muted italic">
@@ -451,6 +530,18 @@ export function ClassicCartPolePage() {
                   <span className="text-text-muted">Current {'\u03B5'}</span>
                   <span className="font-mono text-accent-yellow">{agent.getCurrentEpsilon().toFixed(4)}</span>
                 </div>
+              )}
+              {algorithmType === 'dqn' && agent instanceof DQNAgent && (
+                <>
+                  <div className="flex justify-between">
+                    <span className="text-text-muted">Current {'\u03B5'}</span>
+                    <span className="font-mono text-accent-yellow">{agent.getCurrentEpsilon().toFixed(4)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-text-muted">Buffer</span>
+                    <span className="font-mono text-text">{agent.getBufferSize()} / 5000</span>
+                  </div>
+                </>
               )}
             </div>
           </div>

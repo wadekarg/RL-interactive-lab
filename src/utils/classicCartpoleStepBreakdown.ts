@@ -73,7 +73,65 @@ export interface ClassicRandomBreakdown {
   done: boolean
 }
 
-export type ClassicBreakdown = ClassicTDBreakdown | ClassicReinforceBreakdown | ClassicRandomBreakdown
+export interface ClassicDQNBreakdown {
+  type: 'classic-dqn'
+  stepIndex: number
+  episode: number
+  stepInEpisode: number
+  state: ClassicCartPoleState
+  action: ClassicCartPoleAction
+  actionName: string
+  reward: number
+  nextState: ClassicCartPoleState
+  done: boolean
+  qValues: number[]
+  isExploration: boolean
+  greedyAction: ClassicCartPoleAction
+  epsilon: number
+  bufferSize: number
+  tdError: number
+}
+
+export interface ClassicNeuralReinforceBreakdown {
+  type: 'classic-neural-reinforce'
+  stepIndex: number
+  episode: number
+  stepInEpisode: number
+  state: ClassicCartPoleState
+  action: ClassicCartPoleAction
+  actionName: string
+  reward: number
+  nextState: ClassicCartPoleState
+  done: boolean
+  episodeDuration: number | null
+  episodeReturn: number | null
+  probabilities: number[]
+}
+
+export interface ClassicA2CBreakdown {
+  type: 'classic-a2c'
+  stepIndex: number
+  episode: number
+  stepInEpisode: number
+  state: ClassicCartPoleState
+  action: ClassicCartPoleAction
+  actionName: string
+  reward: number
+  nextState: ClassicCartPoleState
+  done: boolean
+  episodeDuration: number | null
+  episodeReturn: number | null
+  probabilities: number[]
+  stateValue: number
+}
+
+export type ClassicBreakdown =
+  | ClassicTDBreakdown
+  | ClassicReinforceBreakdown
+  | ClassicRandomBreakdown
+  | ClassicDQNBreakdown
+  | ClassicNeuralReinforceBreakdown
+  | ClassicA2CBreakdown
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -396,4 +454,149 @@ export function generateClassicRandomNarrative(bd: ClassicRandomBreakdown): stri
     return `The agent pushed ${bd.actionName} (random, 50/50). Episode ended after ${bd.stepInEpisode + 1} steps. No learning \u2014 this is the baseline to beat.`
   }
   return `The agent pushed ${bd.actionName} (random, 50/50). Step ${bd.stepInEpisode + 1} of episode ${bd.episode}. Each action has equal probability \u2014 no state information used.`
+}
+
+// ─── DQN Breakdown ───────────────────────────────────────────────────────────
+
+export function computeClassicDQNBreakdown(
+  history: SimulationStep[],
+  stepIndex: number,
+): ClassicDQNBreakdown | null {
+  if (stepIndex < 0 || stepIndex >= history.length) return null
+
+  const step = history[stepIndex]
+  const state = step.state as ClassicCartPoleState
+  const action = step.action as ClassicCartPoleAction
+  const nextState = step.nextState as ClassicCartPoleState
+
+  const { episode, stepInEpisode } = getEpisodeInfo(history, stepIndex)
+
+  const qValues: number[] = step.values?.qValues ?? [0, 0]
+  const epsilon: number = step.values?.epsilon?.[0] ?? 1
+  const bufferSize: number = step.values?.bufferSize?.[0] ?? 0
+  const tdError: number = step.values?.tdError?.[0] ?? 0
+
+  const greedyAction = (qValues[0] >= qValues[1] ? 0 : 1) as ClassicCartPoleAction
+  const allEqual = Math.abs(qValues[0] - qValues[1]) < 1e-10
+  const isExploration = !allEqual && action !== greedyAction
+
+  return {
+    type: 'classic-dqn',
+    stepIndex,
+    episode,
+    stepInEpisode,
+    state,
+    action,
+    actionName: CLASSIC_ACTION_NAMES[action],
+    reward: step.reward,
+    nextState,
+    done: step.done,
+    qValues,
+    isExploration,
+    greedyAction,
+    epsilon,
+    bufferSize,
+    tdError,
+  }
+}
+
+export function generateClassicDQNNarrative(bd: ClassicDQNBreakdown): string {
+  const greedyActionName = CLASSIC_ACTION_NAMES[bd.greedyAction]
+  const moveType = bd.isExploration
+    ? `an \u03B5-random EXPLORATION (greedy would choose ${greedyActionName})`
+    : Math.abs(bd.qValues[0] - bd.qValues[1]) < 1e-10
+      ? 'random (network not trained yet \u2014 Q-values equal)'
+      : `GREEDY (highest Q=${fmt(bd.qValues[bd.action])})`
+
+  let outcome: string
+  if (bd.done) {
+    const result = getBalanceResult(bd.stepInEpisode + 1, bd.done)
+    outcome = result === 'solved'
+      ? `Balanced 500 steps! Episode ${bd.episode} solved.`
+      : `Toppled after ${bd.stepInEpisode + 1} steps (\u03B8=${(bd.nextState.theta * 180 / Math.PI).toFixed(1)}\u00B0).`
+  } else {
+    outcome = `Balancing (\u03B8=${(bd.nextState.theta * 180 / Math.PI).toFixed(1)}\u00B0). Step ${bd.stepInEpisode + 1} of ep ${bd.episode}.`
+  }
+
+  const bufferNote = bd.bufferSize < 64
+    ? ` Buffer filling (${bd.bufferSize}/64 \u2014 no updates yet).`
+    : bd.tdError > 0.001
+      ? ` Last batch avg |TD error|: ${fmt(bd.tdError)}.`
+      : ''
+
+  return `Pushed ${bd.actionName} \u2014 ${moveType}. \u03B5=${(bd.epsilon * 100).toFixed(1)}%. ${outcome}${bufferNote}`
+}
+
+// ─── Neural REINFORCE Breakdown ───────────────────────────────────────────────
+
+export function computeClassicNeuralReinforceBreakdown(
+  history: SimulationStep[],
+  stepIndex: number,
+): ClassicNeuralReinforceBreakdown | null {
+  if (stepIndex < 0 || stepIndex >= history.length) return null
+
+  const step = history[stepIndex]
+  const state = step.state as ClassicCartPoleState
+  const action = step.action as ClassicCartPoleAction
+  const nextState = step.nextState as ClassicCartPoleState
+
+  const { episode, stepInEpisode } = getEpisodeInfo(history, stepIndex)
+  const duration = getEpisodeDuration(history, stepIndex)
+  const episodeReturn = getEpisodeReturn(history, stepIndex)
+
+  const probabilities: number[] = step.values?.probs ?? [0.5, 0.5]
+
+  return {
+    type: 'classic-neural-reinforce',
+    stepIndex,
+    episode,
+    stepInEpisode,
+    state,
+    action,
+    actionName: CLASSIC_ACTION_NAMES[action],
+    reward: step.reward,
+    nextState,
+    done: step.done,
+    episodeDuration: duration,
+    episodeReturn,
+    probabilities,
+  }
+}
+
+// ─── A2C Breakdown ────────────────────────────────────────────────────────────
+
+export function computeClassicA2CBreakdown(
+  history: SimulationStep[],
+  stepIndex: number,
+): ClassicA2CBreakdown | null {
+  if (stepIndex < 0 || stepIndex >= history.length) return null
+
+  const step = history[stepIndex]
+  const state = step.state as ClassicCartPoleState
+  const action = step.action as ClassicCartPoleAction
+  const nextState = step.nextState as ClassicCartPoleState
+
+  const { episode, stepInEpisode } = getEpisodeInfo(history, stepIndex)
+  const duration = getEpisodeDuration(history, stepIndex)
+  const episodeReturn = getEpisodeReturn(history, stepIndex)
+
+  const probabilities: number[] = step.values?.probs ?? [0.5, 0.5]
+  const stateValue: number = step.values?.value?.[0] ?? 0
+
+  return {
+    type: 'classic-a2c',
+    stepIndex,
+    episode,
+    stepInEpisode,
+    state,
+    action,
+    actionName: CLASSIC_ACTION_NAMES[action],
+    reward: step.reward,
+    nextState,
+    done: step.done,
+    episodeDuration: duration,
+    episodeReturn,
+    probabilities,
+    stateValue,
+  }
 }
