@@ -5,15 +5,10 @@ import {
 import { useThemeColors } from '../../hooks/useThemeColors'
 
 interface EpisodeDurationChartProps {
-  /** Array of episode durations (steps per episode) */
   durations: number[]
-  /** Whether each episode was a success (green dots) */
   successEpisodes?: boolean[]
-  /** Label for success dots in the legend/tooltip */
   successLabel?: string
-  /** Optional horizontal reference line (e.g. 500 for classic CartPole solved threshold) */
   referenceLine?: number
-  rollingWindow?: number
 }
 
 export function EpisodeDurationChart({
@@ -21,25 +16,16 @@ export function EpisodeDurationChart({
   successEpisodes,
   successLabel = 'Success',
   referenceLine,
-  rollingWindow = 20,
 }: EpisodeDurationChartProps) {
   const tc = useThemeColors()
 
   const data = useMemo(() => {
-    return durations.map((d, i) => {
-      const windowStart = Math.max(0, i - rollingWindow + 1)
-      const windowSlice = durations.slice(windowStart, i + 1)
-      const avg = windowSlice.reduce((s, v) => s + v, 0) / windowSlice.length
-      const isSuccess = successEpisodes && successEpisodes[i]
-
-      return {
-        episode: i + 1,
-        duration: d,
-        avg: Math.round(avg * 10) / 10,
-        success: isSuccess ? d : undefined,
-      }
-    })
-  }, [durations, successEpisodes, rollingWindow])
+    return durations.map((d, i) => ({
+      episode: i + 1,
+      duration: d,
+      success: successEpisodes?.[i] ? d : undefined,
+    }))
+  }, [durations, successEpisodes])
 
   if (data.length === 0) {
     return (
@@ -78,19 +64,11 @@ export function EpisodeDurationChart({
           )}
           <Line
             type="monotone"
-            dataKey="avg"
-            stroke={tc.primary}
-            strokeWidth={2}
-            dot={false}
-            name="Rolling Avg"
-          />
-          <Line
-            type="monotone"
             dataKey="duration"
-            stroke={`rgba(${tc.rawPrimary}, 0.2)`}
-            strokeWidth={1}
+            stroke={tc.primary}
+            strokeWidth={1.5}
             dot={false}
-            name="Duration"
+            name="Steps"
           />
           <Scatter
             dataKey="success"
