@@ -33,7 +33,7 @@ export function ClassicCartPolePage() {
   const [epsilonDecay, setEpsilonDecay] = useState(0.9985)
   const [epsilonMin, setEpsilonMin] = useState(0.02)
   const [showIntro, setShowIntro] = useState(true)
-  const [maxSteps, setMaxSteps] = useState(100000)
+  const [maxSteps, setMaxSteps] = useState(500000)
   const [envSeed, setEnvSeed] = useState(0)
 
   const { status, speed, stepsPerTick, history, addStep, setStatus, setTotalStepCount, reset: resetStore, totalStepCount } = useSimulationStore()
