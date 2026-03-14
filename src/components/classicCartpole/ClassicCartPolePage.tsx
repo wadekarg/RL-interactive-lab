@@ -18,12 +18,13 @@ type AlgorithmType = 'random' | 'discretized-q' | 'reinforce'
 
 export function ClassicCartPolePage() {
   const [algorithmType, setAlgorithmType] = useState<AlgorithmType>('discretized-q')
-  const [alpha, setAlpha] = useState(0.1)
+  const [alpha, setAlpha] = useState(0.2)
   const [gamma, setGamma] = useState(0.99)
-  const [epsilon, setEpsilon] = useState(0.1)
-  const [lr, setLr] = useState(0.01)
+  const [gammaRF, setGammaRF] = useState(0.97)
+  const [epsilon, setEpsilon] = useState(1.0)
+  const [lr, setLr] = useState(0.005)
   const [bins, setBins] = useState(6)
-  const [epsilonDecay, setEpsilonDecay] = useState(0.995)
+  const [epsilonDecay, setEpsilonDecay] = useState(0.998)
   const [epsilonMin, setEpsilonMin] = useState(0.01)
   const [showIntro, setShowIntro] = useState(true)
   const [maxSteps, setMaxSteps] = useState(100000)
@@ -55,9 +56,9 @@ export function ClassicCartPolePage() {
       case 'discretized-q':
         return new DiscretizedQLearningAgent(alpha, gamma, epsilon, discretizationConfig, epsilonDecay, epsilonMin)
       case 'reinforce':
-        return new ReinforceAgent(lr, gamma)
+        return new ReinforceAgent(lr, gammaRF)
     }
-  }, [algorithmType, alpha, gamma, epsilon, lr, discretizationConfig, epsilonDecay, epsilonMin, envSeed]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [algorithmType, alpha, gamma, gammaRF, epsilon, lr, discretizationConfig, epsilonDecay, epsilonMin, envSeed]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const stateRef = useRef<ClassicCartPoleState>(environment.reset())
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -305,10 +306,10 @@ export function ClassicCartPolePage() {
 
               <div>
                 <div className="flex justify-between text-sm mb-1">
-                  <label className="text-text">{'\u03B5'} Exploration</label>
+                  <label className="text-text">{'\u03B5'} Initial Exploration</label>
                   <span className="font-mono text-primary-light">{epsilon}</span>
                 </div>
-                <input type="range" min={0} max={0.5} step={0.01} value={epsilon}
+                <input type="range" min={0} max={1.0} step={0.01} value={epsilon}
                   onChange={(e) => setEpsilon(Number(e.target.value))} disabled={isRunning}
                   className="w-full accent-primary disabled:opacity-40" />
                 <p className="text-xs text-text-muted mt-0.5">{classicCartpoleParamExplanations.epsilon}</p>
@@ -362,7 +363,7 @@ export function ClassicCartPolePage() {
             </div>
           )}
 
-          {algorithmType !== 'random' && (
+          {algorithmType === 'discretized-q' && (
             <div>
               <div className="flex justify-between text-sm mb-1">
                 <label className="text-text">{'\u03B3'} Discount Factor</label>
@@ -370,6 +371,19 @@ export function ClassicCartPolePage() {
               </div>
               <input type="range" min={0.9} max={1} step={0.005} value={gamma}
                 onChange={(e) => setGamma(Number(e.target.value))} disabled={isRunning}
+                className="w-full accent-primary disabled:opacity-40" />
+              <p className="text-xs text-text-muted mt-0.5">{classicCartpoleParamExplanations.gamma}</p>
+            </div>
+          )}
+
+          {algorithmType === 'reinforce' && (
+            <div>
+              <div className="flex justify-between text-sm mb-1">
+                <label className="text-text">{'\u03B3'} Discount Factor</label>
+                <span className="font-mono text-primary-light">{gammaRF}</span>
+              </div>
+              <input type="range" min={0.9} max={1} step={0.005} value={gammaRF}
+                onChange={(e) => setGammaRF(Number(e.target.value))} disabled={isRunning}
                 className="w-full accent-primary disabled:opacity-40" />
               <p className="text-xs text-text-muted mt-0.5">{classicCartpoleParamExplanations.gamma}</p>
             </div>
