@@ -41,11 +41,12 @@ export function EpisodeDurationChart({
         Episode Duration
       </h3>
       <ResponsiveContainer width="100%" height={200}>
-        <ComposedChart data={data}>
+        <ComposedChart data={data} margin={{ bottom: 16 }}>
           <CartesianGrid strokeDasharray="3 3" stroke={tc.chartGrid} />
-          <XAxis dataKey="episode" stroke={tc.chartAxis} fontSize={11} label={{ value: 'Episode', position: 'insideBottom', offset: -2, fontSize: 10, fill: tc.textMuted }} />
-          <YAxis stroke={tc.chartAxis} fontSize={11} domain={[0, 'auto']} />
+          <XAxis dataKey="episode" stroke={tc.chartAxis} fontSize={11} label={{ value: 'Episode', position: 'insideBottom', offset: -8, fontSize: 10, fill: tc.textMuted }} />
+          <YAxis stroke={tc.chartAxis} fontSize={11} domain={[0, 'auto']} label={{ value: 'Steps', angle: -90, position: 'insideLeft', offset: 10, fontSize: 10, fill: tc.textMuted }} />
           <Tooltip
+            labelFormatter={(v) => `Episode ${v}`}
             contentStyle={{
               backgroundColor: tc.tooltipBg,
               border: `1px solid ${tc.tooltipBorder}`,
