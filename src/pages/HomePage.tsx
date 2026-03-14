@@ -15,20 +15,6 @@ const labs = [
     icon: '\uD83D\uDC18',
     tag: '4 algorithms + editor',
   },
-  {
-    title: 'Classic CartPole',
-    description: 'The classic RL benchmark. Push a cart left or right to keep a pole balanced for 500 steps. Discretized Q-Learning, REINFORCE, and random baseline.',
-    path: '/cartpole',
-    icon: 'cartpole.png',
-    tag: '3 algorithms',
-  },
-  {
-    title: 'Rocket Landing',
-    description: 'Help a rocket land softly under gravity with 3 thrusters. Shaped rewards, 6D state space — the bridge from tabular RL to modern deep RL.',
-    path: '/rocket-landing',
-    icon: '\uD83D\uDE80',
-    tag: '3 algorithms',
-  },
 ]
 
 export function HomePage() {
@@ -43,7 +29,7 @@ export function HomePage() {
           Adjust hyperparameters, watch agents learn in real time, and build intuition.
         </p>
         <div className="flex flex-wrap justify-center gap-2 sm:gap-4 text-xs text-text-muted">
-          <span className="bg-surface-light px-3 py-1 rounded-full">13 algorithms</span>
+          <span className="bg-surface-light px-3 py-1 rounded-full">7 algorithms</span>
           <span className="bg-surface-light px-3 py-1 rounded-full">Interactive controls</span>
           <span className="bg-surface-light px-3 py-1 rounded-full">No backend needed</span>
           <span className="bg-surface-light px-3 py-1 rounded-full">Educational</span>

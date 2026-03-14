@@ -92,7 +92,6 @@ const chapters = [
     color: 'accent-green',
     icon: '\uD83C\uDF1F',
     tags: ['REINFORCE', 'Baselines', 'Policy \u2207'],
-    labLink: '/cartpole',
   },
 ]
 
@@ -184,7 +183,7 @@ export function LearnPage() {
           <h3 className="text-sm font-bold text-accent-green mb-2">Algorithms (Ch 8-10)</h3>
           <p className="text-xs text-text-muted leading-relaxed m-0">
             The methods that put theory into practice: exploration strategies (bandits), temporal
-            difference learning (GridWorld), and policy gradients (CartPole/Rocket). Each connects
+            difference learning (GridWorld). Each connects
             directly to a lab simulation.
           </p>
         </div>
