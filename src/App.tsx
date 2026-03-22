@@ -5,6 +5,10 @@ import { BanditPage } from './components/bandit/BanditPage'
 import { GridWorldPage } from './components/gridworld/GridWorldPage'
 import { BanditGuidePage } from './pages/BanditGuidePage'
 import { GridWorldGuidePage } from './pages/GridWorldGuidePage'
+import { ClassicCartPolePage } from './components/classicCartpole/ClassicCartPolePage'
+import { ClassicCartPoleGuidePage } from './pages/ClassicCartPoleGuidePage'
+import { RocketLandingPage } from './components/rocketLanding/RocketLandingPage'
+import { RocketLandingGuidePage } from './pages/RocketLandingGuidePage'
 import { LearnPage } from './pages/LearnPage'
 import { WhatIsRLPage } from './pages/learn/WhatIsRLPage'
 import { StatesAndActionsPage } from './pages/learn/StatesAndActionsPage'
@@ -39,7 +43,10 @@ function App() {
           <Route path="/bandit-guide" element={<BanditGuidePage />} />
           <Route path="/gridworld" element={<GridWorldPage />} />
           <Route path="/gridworld-guide" element={<GridWorldGuidePage />} />
-
+          <Route path="/cartpole" element={<ClassicCartPolePage />} />
+          <Route path="/cartpole-guide" element={<ClassicCartPoleGuidePage />} />
+          <Route path="/rocket-landing" element={<RocketLandingPage />} />
+          <Route path="/rocket-landing-guide" element={<RocketLandingGuidePage />} />
         </Routes>
       </main>
     </div>

@@ -8,6 +8,8 @@ const navItems = [
   { path: '/learn', label: 'Learn RL' },
   { path: '/bandit', label: 'Multi-Armed Bandit' },
   { path: '/gridworld', label: 'GridWorld' },
+  { path: '/cartpole', label: 'CartPole' },
+  { path: '/rocket-landing', label: 'Rocket Landing' },
 ]
 
 const THEME_META: Record<Theme, { icon: string; label: string }> = {
