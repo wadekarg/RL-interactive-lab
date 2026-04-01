@@ -5,7 +5,7 @@ import { python } from '@codemirror/lang-python'
 import { oneDark } from '@codemirror/theme-one-dark'
 import { defaultKeymap, indentWithTab } from '@codemirror/commands'
 import { syntaxHighlighting, defaultHighlightStyle, bracketMatching } from '@codemirror/language'
-import { banditPythonCode } from '../../content/banditPythonCode'
+import { banditPythonCode, type PythonCodeEntry } from '../../content/banditPythonCode'
 
 type AlgorithmType = 'epsilon-greedy' | 'ucb' | 'thompson-sampling'
 
