@@ -13,6 +13,7 @@ import { AlgorithmExplainer } from '../shared/AlgorithmExplainer'
 import { GridCanvas } from './GridCanvas'
 import { StepBreakdownPanel } from './StepBreakdownPanel'
 import { gridworldAlgorithms, gridworldIntro, gridworldParamExplanations } from '../../content/gridworldExplainer'
+import { GridWorldPythonTab } from './GridWorldPythonTab'
 import type { Agent } from '../../algorithms/types'
 
 type AlgorithmType = 'q-learning' | 'sarsa' | 'value-iteration' | 'policy-iteration'
@@ -52,6 +53,7 @@ function createDefaultGrid(rows: number, cols: number): {
 
 export function GridWorldPage() {
   const [algorithmType, setAlgorithmType] = useState<AlgorithmType>('q-learning')
+  const [activeTab, setActiveTab] = useState<'lab' | 'python'>('lab')
   const [alpha, setAlpha] = useState(0.1)
   const [gamma, setGamma] = useState(0.95)
   const [epsilon, setEpsilon] = useState(0.15)
@@ -339,6 +341,41 @@ export function GridWorldPage() {
           </div>
         )}
       </div>
+
+      {/* ===== TAB SWITCHER ===== */}
+      <div className="flex gap-1 mb-6 bg-surface-light rounded-xl border border-surface-lighter p-1 w-fit">
+        <button
+          onClick={() => setActiveTab('lab')}
+          className={`px-5 py-2 rounded-lg text-sm font-semibold border-0 cursor-pointer transition-colors ${
+            activeTab === 'lab'
+              ? 'bg-primary text-white'
+              : 'bg-transparent text-text-muted hover:text-text hover:bg-surface'
+          }`}
+        >
+          ▶ Lab
+        </button>
+        <button
+          onClick={() => setActiveTab('python')}
+          className={`px-5 py-2 rounded-lg text-sm font-semibold border-0 cursor-pointer transition-colors ${
+            activeTab === 'python'
+              ? 'bg-primary text-white'
+              : 'bg-transparent text-text-muted hover:text-text hover:bg-surface'
+          }`}
+        >
+          🐍 Python
+        </button>
+      </div>
+
+      {/* ===== PYTHON TAB ===== */}
+      {activeTab === 'python' && (
+        <GridWorldPythonTab
+          algorithmType={algorithmType}
+          onAlgorithmChange={(type) => { setAlgorithmType(type); }}
+        />
+      )}
+
+      {/* ===== LAB TAB ===== */}
+      {activeTab === 'lab' && <>
 
       {/* ===== GRID SETUP ===== */}
       <div className="bg-surface-light rounded-xl border border-surface-lighter p-4 mb-6">
@@ -667,6 +704,8 @@ export function GridWorldPage() {
           />
         </div>
       </div>
+
+      </>}
     </div>
   )
 }
