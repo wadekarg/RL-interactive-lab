@@ -121,6 +121,7 @@ Every chapter includes interactive widgets, KaTeX-rendered equations, and direct
 - 📊 **Episode tracking** — Duration and reward charts with success markers
 - 🎨 **3 themes** — Dark (default), Light, and Warm — persisted in localStorage
 - 📐 **KaTeX equations** — Bellman equations, policy gradient theorem, and more rendered beautifully
+- 🐍 **Python code tab** — Editable Python implementations with in-browser execution (Pyodide), syntax highlighting (CodeMirror), and download as .py
 - 📱 **Responsive** — Works on desktop and tablet
 
 <br>
